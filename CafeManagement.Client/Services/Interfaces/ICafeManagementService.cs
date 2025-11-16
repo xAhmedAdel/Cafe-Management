@@ -19,6 +19,10 @@ public interface ISignalRService
     Task NotifySessionStarted(SessionDto session);
     Task NotifySessionEnded(SessionDto session);
     Task NotifyClientStatusUpdated(int clientId, int status);
+    Task SendScreenshot(byte[] imageData);
+    Task NotifyRemoteControlStarted();
+    Task NotifyRemoteControlStopped();
+    Task SendRemoteCommand(string command, params object[] parameters);
 }
 
 public interface ISystemService

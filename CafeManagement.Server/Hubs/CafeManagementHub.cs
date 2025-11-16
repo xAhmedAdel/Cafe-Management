@@ -11,6 +11,15 @@ public interface ICafeManagementHubClient
     Task SessionExtended(SessionDto session);
     Task SystemMessage(string message);
     Task UserBalanceUpdated(UserDto user);
+    Task ReceiveScreenshot(byte[] imageData);
+    Task ReceiveRemoteCommand(byte[] commandData);
+    Task ReceiveTextMessage(string message);
+    Task SetLockScreenState(bool isLocked);
+    Task SetTimeWarning(int minutes);
+    Task UnlockWorkstation();
+    Task LockWorkstation();
+    Task StartRemoteControl();
+    Task StopRemoteControl();
 }
 
 public class CafeManagementHub : Hub<ICafeManagementHubClient>
@@ -155,6 +164,126 @@ public class CafeManagementHub : Hub<ICafeManagementHubClient>
             .ToArray();
 
         return connectedClients;
+    }
+
+    // Screen sharing methods
+    public async Task ReceiveScreenshot(byte[] imageData)
+    {
+        var connectionId = Context.ConnectionId;
+
+        // Find which client sent this screenshot
+        if (_connectedClients.TryGetValue(connectionId, out var clientId))
+        {
+            // Broadcast screenshot to all connected operators
+            await Clients.Group("Operators").ReceiveScreenshot(imageData);
+            await Clients.Group("Administrators").ReceiveScreenshot(imageData);
+
+            _logger.LogDebug($"Screenshot received from client {clientId}: {imageData.Length} bytes");
+        }
+    }
+
+    public async Task RemoteControlStarted()
+    {
+        var connectionId = Context.ConnectionId;
+
+        if (_connectedClients.TryGetValue(connectionId, out var clientId))
+        {
+            // Notify all operators that remote control has started
+            await Clients.Group("Operators").SystemMessage($"Remote control started for client {clientId}");
+            await Clients.Group("Administrators").SystemMessage($"Remote control started for client {clientId}");
+
+            _logger.LogInformation($"Remote control started for client {clientId}");
+        }
+    }
+
+    public async Task RemoteControlStopped()
+    {
+        var connectionId = Context.ConnectionId;
+
+        if (_connectedClients.TryGetValue(connectionId, out var clientId))
+        {
+            // Notify all operators that remote control has stopped
+            await Clients.Group("Operators").SystemMessage($"Remote control stopped for client {clientId}");
+            await Clients.Group("Administrators").SystemMessage($"Remote control stopped for client {clientId}");
+
+            _logger.LogInformation($"Remote control stopped for client {clientId}");
+        }
+    }
+
+    public async Task RemoteCommand(string command, object[] parameters)
+    {
+        var connectionId = Context.ConnectionId;
+
+        // Forward the remote command to the specified client
+        if (_connectedClients.TryGetValue(connectionId, out var clientId))
+        {
+            // Send command to specific client
+            await Clients.Group($"Client_{clientId}").ReceiveRemoteCommand(System.Text.Encoding.UTF8.GetBytes($"{command}:{string.Join(",", parameters)}"));
+
+            _logger.LogDebug($"Remote command forwarded to client {clientId}: {command}");
+        }
+    }
+
+    // Client control methods
+    public async Task RequestUnlock()
+    {
+        var connectionId = Context.ConnectionId;
+
+        if (_connectedClients.TryGetValue(connectionId, out var clientId))
+        {
+            // Notify operators that unlock is requested
+            await Clients.Group("Operators").SystemMessage($"Client {clientId} is requesting unlock");
+
+            _logger.LogInformation($"Unlock request received from client {clientId}");
+        }
+    }
+
+    // Methods for sending commands to clients
+    public async Task SendScreenshotRequestToClient(int clientId)
+    {
+        await Clients.Group($"Client_{clientId}").SystemMessage("Screenshot requested");
+    }
+
+    public async Task SendRemoteCommandToClient(int clientId, string command, params object[] parameters)
+    {
+        var commandData = System.Text.Encoding.UTF8.GetBytes($"{command}:{string.Join(",", parameters)}");
+        await Clients.Group($"Client_{clientId}").ReceiveRemoteCommand(commandData);
+    }
+
+    public async Task LockClient(int clientId)
+    {
+        await Clients.Group($"Client_{clientId}").LockWorkstation();
+        _logger.LogInformation($"Lock command sent to client {clientId}");
+    }
+
+    public async Task UnlockClient(int clientId)
+    {
+        await Clients.Group($"Client_{clientId}").UnlockWorkstation();
+        _logger.LogInformation($"Unlock command sent to client {clientId}");
+    }
+
+    public async Task SendTextMessageToClient(int clientId, string message)
+    {
+        await Clients.Group($"Client_{clientId}").ReceiveTextMessage(message);
+        _logger.LogInformation($"Text message sent to client {clientId}: {message}");
+    }
+
+    public async Task SetClientTimeWarning(int clientId, int minutes)
+    {
+        await Clients.Group($"Client_{clientId}").SetTimeWarning(minutes);
+        _logger.LogInformation($"Time warning sent to client {clientId}: {minutes} minutes");
+    }
+
+    public async Task StartRemoteControlForClient(int clientId)
+    {
+        await Clients.Group($"Client_{clientId}").StartRemoteControl();
+        _logger.LogInformation($"Remote control start command sent to client {clientId}");
+    }
+
+    public async Task StopRemoteControlForClient(int clientId)
+    {
+        await Clients.Group($"Client_{clientId}").StopRemoteControl();
+        _logger.LogInformation($"Remote control stop command sent to client {clientId}");
     }
 }
 
