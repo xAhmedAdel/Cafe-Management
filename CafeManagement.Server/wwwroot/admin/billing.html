@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billing Settings - Cafe Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #667eea;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status.active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-group .form-control {
+            flex: 1;
+        }
+
+        .input-group-text {
+            padding: 12px;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 0 6px 6px 0;
+            font-weight: 500;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .info-text {
+            background: #e3f2fd;
+            color: #1565c0;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196f3;
+        }
+
+        .info-text h3 {
+            margin-bottom: 10px;
+        }
+
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .calc-demo {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 6px;
+            margin-top: 20px;
+        }
+
+        .calc-result {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #28a745;
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header {
+                padding: 15px;
+                margin-bottom: 20px;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .card {
+                padding: 20px;
+                margin-bottom: 15px;
+            }
+
+            .card-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+                padding-bottom: 10px;
+            }
+
+            .card-title {
+                font-size: 1.2rem;
+            }
+
+            .form-group {
+                margin-bottom: 15px;
+            }
+
+            .form-control {
+                padding: 14px;
+                font-size: 16px;
+                min-height: 48px;
+            }
+
+            .input-group {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .input-group-text {
+                border-radius: 6px 6px 0 0;
+                border-bottom: none;
+                text-align: center;
+            }
+
+            .input-group .form-control {
+                border-radius: 0 0 6px 6px;
+                border-top: none;
+            }
+
+            .btn {
+                padding: 14px 20px;
+                font-size: 16px;
+                min-height: 48px;
+                width: 100%;
+                justify-content: center;
+                margin-bottom: 10px;
+            }
+
+            .btn-group {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .calc-demo {
+                padding: 15px;
+                margin-top: 15px;
+            }
+
+            .calc-result {
+                font-size: 1.3rem;
+                padding: 15px;
+                background: white;
+                border-radius: 6px;
+                border: 2px solid #28a745;
+                margin-top: 15px;
+            }
+
+            .alert {
+                padding: 12px;
+                margin-bottom: 15px;
+            }
+
+            .form-row {
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .form-row .form-group {
+                margin-bottom: 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.3rem;
+            }
+
+            .card {
+                padding: 15px;
+            }
+
+            .card-title {
+                font-size: 1.1rem;
+            }
+
+            .calc-result {
+                font-size: 1.2rem;
+            }
+
+            .container {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <a href="index.html" class="btn btn-secondary" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 8px 16px; text-decoration: none;">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+            <h1>
+                <i class="fas fa-calculator"></i>
+                Billing Settings
+            </h1>
+        </div>
+
+        <div class="quick-stats">
+            <div class="stat-card">
+                <div class="stat-value" id="currentRate">20.00</div>
+                <div class="stat-label">Current Hourly Rate</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="currentCurrency">L.E</div>
+                <div class="stat-label">Currency</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="activeStatus">Active</div>
+                <div class="stat-label">Status</div>
+            </div>
+        </div>
+
+        <div class="alert alert-success" id="successMessage">
+            <i class="fas fa-check-circle"></i>
+            <span id="successText">Settings updated successfully!</span>
+        </div>
+
+        <div class="alert alert-danger" id="errorMessage">
+            <i class="fas fa-exclamation-circle"></i>
+            <span id="errorText">Error updating settings!</span>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-cog"></i>
+                    Billing Configuration
+                </h2>
+                <span class="status active" id="settingsStatus">
+                    <i class="fas fa-circle"></i> Active
+                </span>
+            </div>
+
+            <div class="info-text">
+                <h3><i class="fas fa-info-circle"></i> How Billing Works</h3>
+                <p>The cafe uses a simple hourly billing system. Each client session is calculated based on the duration and hourly rate. Sessions are rounded up to the nearest hour by default.</p>
+            </div>
+
+            <form id="billingForm">
+                <div class="form-group">
+                    <label for="hourlyRate">Hourly Rate</label>
+                    <div class="input-group">
+                        <input type="number"
+                               class="form-control"
+                               id="hourlyRate"
+                               name="hourlyRate"
+                               step="0.01"
+                               min="0.01"
+                               value="20.00"
+                               required>
+                        <span class="input-group-text">per hour</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="currency">Currency</label>
+                    <select class="form-control" id="currency" name="currency" required>
+                        <option value="L.E">L.E</option>
+                        <option value="USD">USD</option>
+                        <option value="EUR">EUR</option>
+                        <option value="GBP">GBP</option>
+                        <option value="JPY">JPY</option>
+                        <option value="CAD">CAD</option>
+                        <option="AUD">AUD</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary" id="saveBtn">
+                        <i class="fas fa-save"></i>
+                        Save Settings
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="cancelBtn">
+                        <i class="fas fa-times"></i>
+                        Cancel
+                    </button>
+                    <button type="button" class="btn btn-success" id="refreshBtn">
+                        <i class="fas fa-sync-alt"></i>
+                        Refresh
+                    </button>
+                </div>
+            </form>
+
+            <div class="calc-demo">
+                <h3><i class="fas fa-calculator"></i> Cost Calculator</h3>
+                <div class="form-group">
+                    <label for="demoMinutes">Session Duration (minutes)</label>
+                    <input type="number"
+                           class="form-control"
+                           id="demoMinutes"
+                           min="1"
+                           value="60"
+                           step="1">
+                </div>
+                <button type="button" class="btn btn-primary" id="calculateBtn">
+                    <i class="fas fa-calculator"></i>
+                    Calculate Cost
+                </button>
+                <div class="calc-result" id="calcResult">
+                    20.00 L.E
+                </div>
+            </div>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Loading...</p>
+        </div>
+    </div>
+
+    <script>
+        // API base URL
+        const API_BASE = '/api/billing';
+
+        // DOM elements
+        const hourlyRateInput = document.getElementById('hourlyRate');
+        const currencySelect = document.getElementById('currency');
+        const saveBtn = document.getElementById('saveBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const successMessage = document.getElementById('successMessage');
+        const errorMessage = document.getElementById('errorMessage');
+        const loading = document.getElementById('loading');
+        const billingForm = document.getElementById('billingForm');
+        const currentRateSpan = document.getElementById('currentRate');
+        const currentCurrencySpan = document.getElementById('currentCurrency');
+        const settingsStatus = document.getElementById('settingsStatus');
+        const demoMinutesInput = document.getElementById('demoMinutes');
+        const calculateBtn = document.getElementById('calculateBtn');
+        const calcResult = document.getElementById('calcResult');
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadCurrentSettings();
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            billingForm.addEventListener('submit', handleSaveSettings);
+            cancelBtn.addEventListener('click', resetForm);
+            refreshBtn.addEventListener('click', loadCurrentSettings);
+            calculateBtn.addEventListener('click', calculateCost);
+            demoMinutesInput.addEventListener('input', calculateCost);
+            hourlyRateInput.addEventListener('input', calculateCost);
+        }
+
+        async function loadCurrentSettings() {
+            showLoading(true);
+            try {
+                const response = await fetch(`${API_BASE}/settings`);
+                if (response.ok) {
+                    const settings = await response.json();
+                    populateForm(settings);
+                    updateStats(settings);
+                } else {
+                    showError('Failed to load billing settings');
+                }
+            } catch (error) {
+                console.error('Error loading settings:', error);
+                showError('Error connecting to server');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function populateForm(settings) {
+            hourlyRateInput.value = settings.hourlyRate.toFixed(2);
+            currencySelect.value = settings.currency;
+
+            // Update status
+            if (settings.isActive) {
+                settingsStatus.className = 'status active';
+                settingsStatus.innerHTML = '<i class="fas fa-circle"></i> Active';
+            } else {
+                settingsStatus.className = 'status';
+                settingsStatus.innerHTML = '<i class="fas fa-circle"></i> Inactive';
+            }
+        }
+
+        function updateStats(settings) {
+            currentRateSpan.textContent = settings.hourlyRate.toFixed(2);
+            currentCurrencySpan.textContent = settings.currency;
+        }
+
+        async function handleSaveSettings(e) {
+            e.preventDefault();
+
+            const hourlyRate = parseFloat(hourlyRateInput.value);
+            const currency = currencySelect.value;
+
+            if (hourlyRate <= 0) {
+                showError('Hourly rate must be greater than 0');
+                return;
+            }
+
+            showLoading(true);
+            try {
+                const response = await fetch(`${API_BASE}/settings`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        hourlyRate: hourlyRate,
+                        currency: currency
+                    })
+                });
+
+                if (response.ok) {
+                    const updatedSettings = await response.json();
+                    populateForm(updatedSettings);
+                    updateStats(updatedSettings);
+                    showSuccess('Billing settings updated successfully!');
+                    calculateCost(); // Recalculate with new rates
+                } else {
+                    const errorData = await response.text();
+                    showError(`Failed to update settings: ${errorData}`);
+                }
+            } catch (error) {
+                console.error('Error saving settings:', error);
+                showError('Error connecting to server');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function resetForm() {
+            // Reset to original values
+            loadCurrentSettings();
+        }
+
+        async function calculateCost() {
+            const minutes = parseInt(demoMinutesInput.value) || 0;
+
+            if (minutes <= 0) {
+                calcResult.textContent = 'Invalid duration';
+                return;
+            }
+
+            showLoading(true);
+            try {
+                const response = await fetch(`${API_BASE}/calculate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        durationMinutes: minutes
+                    })
+                });
+
+                if (response.ok) {
+                    const cost = await response.json();
+                    const currency = currentCurrencySpan.textContent;
+                    calcResult.textContent = `${cost.toFixed(2)} ${currency}`;
+                } else {
+                    calcResult.textContent = 'Calculation error';
+                }
+            } catch (error) {
+                console.error('Error calculating cost:', error);
+                calcResult.textContent = 'Calculation error';
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function showLoading(show) {
+            loading.style.display = show ? 'block' : 'none';
+        }
+
+        function showSuccess(message) {
+            successText.textContent = message;
+            successMessage.style.display = 'block';
+            errorMessage.style.display = 'none';
+
+            setTimeout(() => {
+                successMessage.style.display = 'none';
+            }, 5000);
+        }
+
+        function showError(message) {
+            errorText.textContent = message;
+            errorMessage.style.display = 'block';
+            successMessage.style.display = 'none';
+
+            setTimeout(() => {
+                errorMessage.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

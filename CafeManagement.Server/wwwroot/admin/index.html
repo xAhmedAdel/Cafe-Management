@@ -24,6 +24,181 @@
             padding: 20px;
         }
 
+        /* Mobile responsive styles */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .navigation {
+                flex-wrap: wrap;
+                gap: 8px;
+                padding: 10px;
+                margin-bottom: 15px;
+            }
+
+            .nav-button {
+                padding: 12px 16px;
+                font-size: 14px;
+                flex: 1;
+                min-width: 120px;
+                text-align: center;
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+                margin-bottom: 15px;
+            }
+
+            .stat-card {
+                padding: 12px;
+            }
+
+            .stat-card h3 {
+                font-size: 20px;
+            }
+
+            .controls {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+
+            .button-group {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .button-group button {
+                width: 100%;
+                padding: 14px 20px;
+                font-size: 16px;
+                min-height: 48px;
+            }
+
+            .client-card {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 12px;
+            }
+
+            .client-info {
+                margin-bottom: 12px;
+            }
+
+            .client-actions {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+
+            .client-actions button {
+                padding: 12px 8px;
+                font-size: 14px;
+                min-height: 44px;
+            }
+
+            .session-card {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 12px;
+            }
+
+            .session-info {
+                margin-bottom: 12px;
+            }
+
+            .session-actions {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .session-actions button {
+                width: 100%;
+                padding: 12px;
+                min-height: 44px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .client-actions {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-button {
+                min-width: 100px;
+                font-size: 12px;
+                padding: 10px 12px;
+            }
+
+            .header h1 {
+                font-size: 1.2rem;
+            }
+        }
+
+        /* Mobile hamburger menu */
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: 2px solid #764ba2;
+            color: #764ba2;
+            padding: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 18px;
+            margin-left: auto;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-menu-toggle {
+                display: block;
+            }
+
+            .navigation {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 120px;
+                left: 10px;
+                right: 10px;
+                background: rgba(255, 255, 255, 0.98);
+                border-radius: 8px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+                z-index: 1000;
+                padding: 15px;
+            }
+
+            .navigation.active {
+                display: flex;
+            }
+
+            .navigation .nav-button {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                margin-bottom: 8px;
+                width: 100%;
+            }
+        }
+
         .header {
             background: rgba(255, 255, 255, 0.95);
             padding: 20px;
@@ -116,6 +291,50 @@
         button:disabled {
             background: #ccc;
             cursor: not-allowed;
+        }
+
+        /* Button color classes */
+        button.danger {
+            background: #dc3545;
+        }
+        button.danger:hover {
+            background: #c82333;
+        }
+
+        button.success {
+            background: #28a745;
+        }
+        button.success:hover {
+            background: #218838;
+        }
+
+        button.warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        button.warning:hover {
+            background: #e0a800;
+        }
+
+        button.info {
+            background: #17a2b8;
+        }
+        button.info:hover {
+            background: #138496;
+        }
+
+        button.primary {
+            background: #007bff;
+        }
+        button.primary:hover {
+            background: #0069d9;
+        }
+
+        button.secondary {
+            background: #6c757d;
+        }
+        button.secondary:hover {
+            background: #5a6268;
         }
 
         .danger {
@@ -300,13 +519,21 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🏢 Cafe Management Admin Panel</h1>
-            <p>Monitor and control client computers in real-time</p>
+            <div class="header-content">
+                <div>
+                    <h1>🏢 Cafe Management Admin Panel</h1>
+                    <p>Monitor and control client computers in real-time</p>
+                </div>
+                <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">☰</button>
+            </div>
         </div>
 
         <div class="navigation">
             <button onclick="showClients()" class="nav-button active" id="clientsBtn">💻 Clients</button>
             <button onclick="showSessions()" class="nav-button" id="sessionsBtn">⏱️ Sessions</button>
+            <a href="user-management.html" class="nav-button" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); text-decoration: none; display: inline-block;">👥 User Management</a>
+            <a href="reports.html" class="nav-button" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); text-decoration: none; display: inline-block;">📊 Reports</a>
+            <button onclick="window.open('debug.html', '_blank')" class="nav-button" style="background: linear-gradient(135deg, #FF6B6B 0%, #C92A2A 100%);">🔍 Debug</button>
             <button onclick="testLockScreen()" class="nav-button danger">🔒 Test Lock</button>
         </div>
 
@@ -374,6 +601,20 @@
     <script>
         const API_BASE = 'http://localhost:5032/api';
 
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            const navigation = document.querySelector('.navigation');
+            navigation.classList.toggle('active');
+
+            // Close menu when clicking outside
+            document.addEventListener('click', function closeMenu(e) {
+                if (!navigation.contains(e.target) && !e.target.classList.contains('mobile-menu-toggle')) {
+                    navigation.classList.remove('active');
+                    document.removeEventListener('click', closeMenu);
+                }
+            });
+        }
+
         // Load clients on page load
         document.addEventListener('DOMContentLoaded', function() {
             loadClients();
@@ -434,6 +675,9 @@
                         <button onclick="lockClient(${client.id})" class="danger">🔒 Lock</button>
                         <button onclick="unlockClient(${client.id})" class="success">🔓 Unlock</button>
                         <button onclick="startSession(${client.id})" class="warning">⏱️ Start Session</button>
+                        <button onclick="viewScreen(${client.id})" class="info">📸 View Screen</button>
+                        <button onclick="remoteControl(${client.id})" class="primary">🖱️ Remote Control</button>
+                        <button onclick="systemInfo(${client.id})" class="secondary">📊 System Info</button>
                     </div>
                 </div>
             `).join('');
@@ -577,6 +821,86 @@
         async function unlockAllClients() {
             // This would need a corresponding API endpoint
             showMessage('Unlock all functionality not implemented yet', 'warning');
+        }
+
+        // Remote monitoring functions
+        function viewScreen(clientId) {
+            // Navigate to the screen viewing page
+            window.open(`/admin/view-screen.html?clientId=${clientId}`, '_blank');
+        }
+
+        function remoteControl(clientId) {
+            // Navigate to the remote control page
+            window.open(`/admin/remote-control.html?clientId=${clientId}`, '_blank');
+        }
+
+        function systemInfo(clientId) {
+            // Navigate to the system information page
+            window.open(`/admin/system-info.html?clientId=${clientId}`, '_blank');
+        }
+
+        function showImageModal(title, imageData) {
+            // Create modal for displaying screenshot
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.8); display: flex; align-items: center;
+                justify-content: center; z-index: 1000;
+            `;
+
+            modal.innerHTML = `
+                <div style="background: white; padding: 20px; border-radius: 10px; max-width: 90%; max-height: 90%; overflow: auto;">
+                    <h3>${title}</h3>
+                    <img src="data:image/png;base64,${imageData}" style="max-width: 100%; max-height: 80vh; margin: 10px 0;">
+                    <button onclick="this.parentElement.parentElement.remove()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">Close</button>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+            modal.onclick = (e) => {
+                if (e.target === modal) modal.remove();
+            };
+        }
+
+        function showSystemInfoModal(title, info) {
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.8); display: flex; align-items: center;
+                justify-content: center; z-index: 1000;
+            `;
+
+            modal.innerHTML = `
+                <div style="background: white; padding: 20px; border-radius: 10px; max-width: 500px; max-height: 80vh; overflow: auto;">
+                    <h3>${title}</h3>
+                    <div style="margin: 15px 0;">
+                        <p><strong>Computer Name:</strong> ${info.computerName || 'N/A'}</p>
+                        <p><strong>Operating System:</strong> ${info.osVersion || 'N/A'}</p>
+                        <p><strong>Processor:</strong> ${info.processor || 'N/A'}</p>
+                        <p><strong>Total RAM:</strong> ${info.totalMemory || 'N/A'}</p>
+                        <p><strong>Available RAM:</strong> ${info.availableMemory || 'N/A'}</p>
+                        <p><strong>IP Address:</strong> ${info.ipAddress || 'N/A'}</p>
+                        <p><strong>MAC Address:</strong> ${info.macAddress || 'N/A'}</p>
+                        <p><strong>User Name:</strong> ${info.userName || 'N/A'}</p>
+                        <p><strong>Last Updated:</strong> ${new Date().toLocaleString()}</p>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">Close</button>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+            modal.onclick = (e) => {
+                if (e.target === modal) modal.remove();
+            };
+        }
+
+        function openRemoteControlWindow(clientId) {
+            const windowFeatures = 'width=1200,height=700,scrollbars=yes,resizable=yes';
+            const remoteWindow = window.open(`/admin/remote-control.html?clientId=${clientId}`, `RemoteControl_${clientId}`, windowFeatures);
+
+            if (!remoteWindow) {
+                showMessage('Popup blocker detected! Please allow popups for this site.', 'error');
+            }
         }
 
         function showMessage(text, type) {
