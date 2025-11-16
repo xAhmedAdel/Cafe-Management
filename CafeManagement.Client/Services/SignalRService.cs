@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 using CafeManagement.Client.Services.Interfaces;
 using CafeManagement.Application.DTOs;
 using System.Net.Http;
@@ -13,14 +14,18 @@ public class SignalRService : ISignalRService, IDisposable
     private readonly HubConnection _hubConnection;
     private readonly ILogger<SignalRService> _logger;
     private readonly HttpClient _httpClient;
+    private readonly IConfiguration _configuration;
+    private readonly ILockScreenService _lockScreenService;
     private bool _isConnected = false;
 
-    public SignalRService(ILogger<SignalRService> logger)
+    public SignalRService(ILogger<SignalRService> logger, IConfiguration configuration, ILockScreenService lockScreenService)
     {
         _logger = logger;
+        _configuration = configuration;
+        _lockScreenService = lockScreenService;
         _httpClient = new HttpClient();
 
-        var serverUrl = "http://localhost:5032"; // Should be configurable
+        var serverUrl = _configuration["ServerSettings:BaseUrl"] ?? "http://localhost:5032";
         _hubConnection = new HubConnectionBuilder()
             .WithUrl($"{serverUrl}/hub/cafemanagement")
             .WithAutomaticReconnect()
@@ -257,7 +262,8 @@ public class SignalRService : ISignalRService, IDisposable
             };
 
             var content = JsonContent.Create(clientInfo);
-            var response = await _httpClient.PostAsync("http://localhost:5032/api/clients", content);
+            var serverUrl = _configuration["ServerSettings:BaseUrl"] ?? "http://localhost:5032";
+            var response = await _httpClient.PostAsync($"{serverUrl}/api/clients", content);
 
             if (response.IsSuccessStatusCode)
             {
@@ -342,14 +348,32 @@ public class SignalRService : ISignalRService, IDisposable
 
     private Task UnlockWorkstation()
     {
-        _logger.LogInformation("Workstation unlock command received");
-        return Task.CompletedTask;
+        try
+        {
+            _logger.LogInformation("Workstation unlock command received");
+            _lockScreenService.HideLockScreen();
+            return Task.CompletedTask;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error handling workstation unlock command");
+            return Task.CompletedTask;
+        }
     }
 
     private Task LockWorkstation()
     {
-        _logger.LogInformation("Workstation lock command received");
-        return Task.CompletedTask;
+        try
+        {
+            _logger.LogInformation("Workstation lock command received");
+            _lockScreenService.ShowLockScreen();
+            return Task.CompletedTask;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error handling workstation lock command");
+            return Task.CompletedTask;
+        }
     }
 
     private Task StartRemoteControl()

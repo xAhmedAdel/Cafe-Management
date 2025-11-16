@@ -52,9 +52,9 @@ public partial class LockScreenViewModel : ObservableObject
 
     public LockScreenViewModel(ICafeManagementService cafeService, ISystemService systemService, ISignalRService signalRService)
     {
-        _cafeService = cafeService;
-        _systemService = systemService;
-        _signalRService = signalRService;
+        _cafeService = cafeService ?? throw new ArgumentNullException(nameof(cafeService));
+        _systemService = systemService ?? throw new ArgumentNullException(nameof(systemService));
+        _signalRService = signalRService ?? throw new ArgumentNullException(nameof(signalRService));
 
         UpdateClientInfo();
     }
@@ -157,7 +157,7 @@ public partial class LockScreenViewModel : ObservableObject
         try
         {
             var computerName = Environment.MachineName;
-            var localIp = _systemService.GetLocalIpAddress();
+            var localIp = _systemService?.GetLocalIpAddress() ?? "127.0.0.1";
             ClientInfo = $"{computerName} - {localIp}";
         }
         catch

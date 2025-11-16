@@ -9,4 +9,8 @@ public interface ISessionService
     Task<Session> ExtendSessionAsync(int sessionId, int additionalMinutes);
     Task<Session?> GetActiveSessionAsync(int clientId);
     Task<decimal> CalculateSessionCostAsync(int sessionId);
+    Task<List<Session>> GetExpiredSessionsAsync();
+    Task<Session> UpdateSessionAsync(Session session);
+    Task<List<Session>> GetAllSessionsAsync();
+    Task<List<Session>> GetActiveSessionsAsync();
 }

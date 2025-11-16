@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "5LQ01O+JQ70=",
+  "dgSpecHash": "2BZddzYchf8=",
   "success": true,
   "projectFilePath": "C:\\Users\\sokar\\Cafe-Management\\CafeManagement.Client\\CafeManagement.Client.csproj",
   "expectedPackageFiles": [
@@ -61,6 +61,7 @@
     "C:\\Users\\sokar\\.nuget\\packages\\microsoft.extensions.filesystemglobbing\\10.0.0\\microsoft.extensions.filesystemglobbing.10.0.0.nupkg.sha512",
     "C:\\Users\\sokar\\.nuget\\packages\\microsoft.extensions.hosting\\10.0.0\\microsoft.extensions.hosting.10.0.0.nupkg.sha512",
     "C:\\Users\\sokar\\.nuget\\packages\\microsoft.extensions.hosting.abstractions\\10.0.0\\microsoft.extensions.hosting.abstractions.10.0.0.nupkg.sha512",
+    "C:\\Users\\sokar\\.nuget\\packages\\microsoft.extensions.http\\10.0.0\\microsoft.extensions.http.10.0.0.nupkg.sha512",
     "C:\\Users\\sokar\\.nuget\\packages\\microsoft.extensions.identity.core\\10.0.0\\microsoft.extensions.identity.core.10.0.0.nupkg.sha512",
     "C:\\Users\\sokar\\.nuget\\packages\\microsoft.extensions.identity.stores\\10.0.0\\microsoft.extensions.identity.stores.10.0.0.nupkg.sha512",
     "C:\\Users\\sokar\\.nuget\\packages\\microsoft.extensions.logging\\10.0.0\\microsoft.extensions.logging.10.0.0.nupkg.sha512",

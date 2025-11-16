@@ -57,6 +57,26 @@ public class SignalREnabledSessionService : ISessionService
     {
         return await _innerService.CalculateSessionCostAsync(sessionId);
     }
+
+    public async Task<List<Session>> GetExpiredSessionsAsync()
+    {
+        return await _innerService.GetExpiredSessionsAsync();
+    }
+
+    public async Task<Session> UpdateSessionAsync(Session session)
+    {
+        return await _innerService.UpdateSessionAsync(session);
+    }
+
+    public async Task<List<Session>> GetAllSessionsAsync()
+    {
+        return await _innerService.GetAllSessionsAsync();
+    }
+
+    public async Task<List<Session>> GetActiveSessionsAsync()
+    {
+        return await _innerService.GetActiveSessionsAsync();
+    }
 }
 
 public class SignalREnabledClientService : IClientService
@@ -106,6 +126,11 @@ public class SignalREnabledClientService : IClientService
     public async Task<bool> IsClientOnlineAsync(int clientId)
     {
         return await _innerService.IsClientOnlineAsync(clientId);
+    }
+
+    public async Task<Client?> GetClientByIdAsync(int clientId)
+    {
+        return await _innerService.GetClientByIdAsync(clientId);
     }
 }
 

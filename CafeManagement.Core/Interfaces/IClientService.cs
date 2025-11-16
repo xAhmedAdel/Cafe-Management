@@ -9,6 +9,7 @@ public interface IClientService
     Task<Client> UpdateClientStatusAsync(int clientId, ClientStatus status);
     Task<Client> GetClientByMacAddressAsync(string macAddress);
     Task<Client> GetClientByIpAddressAsync(string ipAddress);
+    Task<Client?> GetClientByIdAsync(int clientId);
     Task<IEnumerable<Client>> GetOnlineClientsAsync();
     Task<bool> IsClientOnlineAsync(int clientId);
 }

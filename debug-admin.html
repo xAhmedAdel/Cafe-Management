@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Admin Interface</title>
+</head>
+<body>
+    <h1>Debug Admin Interface</h1>
+    <div id="results"></div>
+
+    <script>
+        console.log('Debug page loaded');
+
+        async function testAPI() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<h2>Testing API...</h2>';
+
+            try {
+                console.log('Testing admin clients API...');
+                const response = await fetch('http://localhost:5032/api/admin/clients');
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const clients = await response.json();
+                console.log('Clients data:', clients);
+
+                results.innerHTML += `
+                    <h3>✅ API Success!</h3>
+                    <p><strong>Status:</strong> ${response.status}</p>
+                    <p><strong>Clients returned:</strong> ${clients.length}</p>
+                    <p><strong>Data:</strong> <pre>${JSON.stringify(clients, null, 2)}</pre></p>
+                `;
+
+                if (clients.length > 0) {
+                    results.innerHTML += `<h3>Client found: ${clients[0].name}</h3>`;
+                }
+
+            } catch (error) {
+                console.error('API Error:', error);
+                results.innerHTML += `<h3>❌ API Error:</h3><p>${error.message}</p>`;
+            }
+        }
+
+        // Test API immediately
+        testAPI();
+
+        // Also test on button click
+        document.addEventListener('DOMContentLoaded', function() {
+            const button = document.createElement('button');
+            button.textContent = 'Test API Again';
+            button.onclick = testAPI;
+            document.body.appendChild(button);
+        });
+    </script>
+</body>
+</html>

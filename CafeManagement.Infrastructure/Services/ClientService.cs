@@ -40,14 +40,15 @@ public class ClientService : IClientService
             Name = name,
             IPAddress = ipAddress,
             MACAddress = macAddress,
-            Status = ClientStatus.Offline
+            Status = ClientStatus.Online
         };
 
         await _unitOfWork.Clients.AddAsync(client);
+        await _unitOfWork.SaveChangesAsync(); // Save client first to get ID
 
         var lockScreenConfig = new LockScreenConfig
         {
-            ClientId = client.Id,
+            ClientId = client.Id, // Now client.Id has a value
             BackgroundColor = "#000000",
             TextColor = "#FFFFFF",
             ShowTimeRemaining = true,
@@ -58,7 +59,7 @@ public class ClientService : IClientService
 
         var logEntry = new UsageLog
         {
-            ClientId = client.Id,
+            ClientId = client.Id, // Now client.Id has a value
             Action = "Client Registered",
             Details = $"New client registered: {name} ({ipAddress})"
         };
@@ -121,5 +122,10 @@ public class ClientService : IClientService
 
         var onlineStatuses = new[] { ClientStatus.Online, ClientStatus.InSession, ClientStatus.Locked };
         return onlineStatuses.Contains(client.Status);
+    }
+
+    public async Task<Client?> GetClientByIdAsync(int clientId)
+    {
+        return await _unitOfWork.Clients.GetByIdAsync(clientId);
     }
 }

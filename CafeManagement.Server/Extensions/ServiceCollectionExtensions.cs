@@ -1,6 +1,6 @@
 using CafeManagement.Core.Interfaces;
 using CafeManagement.Server.Services;
-using CafeManagement.Server.Handlers;
+using CafeManagement.Infrastructure.Services;
 using Microsoft.AspNetCore.SignalR;
 using CafeManagement.Server.Hubs;
 
@@ -13,22 +13,8 @@ public static class ServiceCollectionExtensions
         services.AddSignalR();
         services.AddSingleton<INotificationService, NotificationService>();
 
-        // Replace core services with SignalR-enabled versions
-        services.AddScoped<ISessionService>(provider =>
-        {
-            var innerService = provider.GetRequiredService<CafeManagement.Infrastructure.Services.SessionService>();
-            var notificationService = provider.GetRequiredService<INotificationService>();
-            var mapper = provider.GetRequiredService<AutoMapper.IMapper>();
-            return new SignalREnabledSessionService(innerService, notificationService, mapper);
-        });
-
-        services.AddScoped<IClientService>(provider =>
-        {
-            var innerService = provider.GetRequiredService<CafeManagement.Infrastructure.Services.ClientService>();
-            var notificationService = provider.GetRequiredService<INotificationService>();
-            var mapper = provider.GetRequiredService<AutoMapper.IMapper>();
-            return new SignalREnabledClientService(innerService, notificationService, mapper);
-        });
+        // No need to re-register ISessionService and IClientService
+        // since they're already registered by AddInfrastructure()
 
         return services;
     }

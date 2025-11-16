@@ -60,19 +60,7 @@
                                Foreground="#00FF00"
                                HorizontalAlignment="Center"
                                Margin="0,10,0,0"
-                               FontFamily="Consolas">
-                        <TextBlock.Triggers>
-                            <DataTrigger Binding="{Binding TimeRemainingMinutes}" Value="5">
-                                <Setter Property="TextBlock.Foreground" Value="#FFFF00"/>
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding TimeRemainingMinutes}" Value="2">
-                                <Setter Property="TextBlock.Foreground" Value="#FF6600"/>
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding TimeRemainingMinutes}" Value="0">
-                                <Setter Property="TextBlock.Foreground" Value="#FF0000"/>
-                            </DataTrigger>
-                        </TextBlock.Triggers>
-                    </TextBlock>
+                               FontFamily="Consolas"/>
                 </StackPanel>
             </Border>
 
@@ -81,7 +69,7 @@
                     Background="#1A1A1A"
                     Padding="20,15"
                     Margin="0,0,0,20"
-                    Visibility="{Binding HasSessionInfo, Converter={StaticResource BoolToVisibilityConverter}}">
+                    Visibility="Collapsed">
                 <StackPanel>
                     <TextBlock Text="Session Started:"
                                FontSize="14"
@@ -113,7 +101,7 @@
                     Foreground="White"
                     BorderBrush="#666666"
                     Command="{Binding UnlockCommand}"
-                    Visibility="{Binding CanUnlock, Converter={StaticResource BoolToVisibilityConverter}}"
+                    Visibility="Collapsed"
                     Margin="0,20,0,0"
                     Cursor="Hand"/>
         </StackPanel>
@@ -145,7 +133,7 @@
                 Foreground="White"
                 BorderBrush="#FF0000"
                 Command="{Binding ExitCommand}"
-                Visibility="{Binding CanExit, Converter={StaticResource BoolToVisibilityConverter}}"
+                Visibility="Collapsed"
                 Cursor="Hand"/>
     </Grid>
 </Window>

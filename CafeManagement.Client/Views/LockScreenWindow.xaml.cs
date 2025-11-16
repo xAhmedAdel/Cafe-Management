@@ -40,6 +40,15 @@ public partial class LockScreenWindow : Window
         // Handle window events
         KeyDown += LockScreenWindow_KeyDown;
         Loaded += LockScreenWindow_Loaded;
+
+        // Test lock screen on Ctrl+L for testing purposes
+        KeyDown += (sender, e) =>
+        {
+            if (e.Key == Key.L && Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                TestLockScreen();
+            }
+        };
     }
 
     private async void LockScreenWindow_Loaded(object sender, RoutedEventArgs e)
@@ -76,21 +85,28 @@ public partial class LockScreenWindow : Window
 
     private void StartParticleAnimation()
     {
-        for (int i = 0; i < 50; i++)
+        // Defer particle creation until window is loaded
+        Loaded += (s, e) =>
         {
-            CreateParticle();
-        }
+            for (int i = 0; i < 50; i++)
+            {
+                CreateParticle();
+            }
 
-        DispatcherTimer particleTimer = new DispatcherTimer
-        {
-            Interval = TimeSpan.FromMilliseconds(100)
+            DispatcherTimer particleTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(100)
+            };
+            particleTimer.Tick += (s, e) => UpdateParticles();
+            particleTimer.Start();
         };
-        particleTimer.Tick += (s, e) => UpdateParticles();
-        particleTimer.Start();
     }
 
     private void CreateParticle()
     {
+        if (ParticleCanvas == null || ActualWidth <= 0 || ActualHeight <= 0)
+            return;
+
         var particle = new Ellipse
         {
             Width = _random.Next(2, 8),
@@ -107,6 +123,9 @@ public partial class LockScreenWindow : Window
 
     private void UpdateParticles()
     {
+        if (ActualWidth <= 0 || ActualHeight <= 0)
+            return;
+
         foreach (var particle in _particles)
         {
             var currentTop = Canvas.GetTop(particle);
@@ -138,32 +157,58 @@ public partial class LockScreenWindow : Window
 
     private void StartBackgroundAnimation()
     {
-        var animation = new ColorAnimation
+        // Defer background animation until window is loaded
+        Loaded += (s, e) =>
         {
-            From = Colors.DarkBlue,
-            To = Colors.DarkSlateBlue,
-            Duration = TimeSpan.FromSeconds(5),
-            AutoReverse = true,
-            RepeatBehavior = RepeatBehavior.Forever
+            if (BackgroundGradient != null)
+            {
+                var animation = new ColorAnimation
+                {
+                    From = Colors.DarkBlue,
+                    To = Colors.DarkSlateBlue,
+                    Duration = TimeSpan.FromSeconds(5),
+                    AutoReverse = true,
+                    RepeatBehavior = RepeatBehavior.Forever
+                };
+
+                ((GradientStop)BackgroundGradient.GradientStops[0]).BeginAnimation(GradientStop.ColorProperty, animation);
+
+                var animation2 = new ColorAnimation
+                {
+                    From = Colors.DarkSlateBlue,
+                    To = Colors.DarkBlue,
+                    Duration = TimeSpan.FromSeconds(5),
+                    AutoReverse = true,
+                    RepeatBehavior = RepeatBehavior.Forever
+                };
+
+                ((GradientStop)BackgroundGradient.GradientStops[1]).BeginAnimation(GradientStop.ColorProperty, animation2);
+            }
         };
+    }
 
-        ((GradientStop)BackgroundGradient.GradientStops[0]).BeginAnimation(GradientStop.ColorProperty, animation);
-
-        var animation2 = new ColorAnimation
+    private void TestLockScreen()
+    {
+        try
         {
-            From = Colors.DarkSlateBlue,
-            To = Colors.DarkBlue,
-            Duration = TimeSpan.FromSeconds(5),
-            AutoReverse = true,
-            RepeatBehavior = RepeatBehavior.Forever
-        };
-
-        ((GradientStop)BackgroundGradient.GradientStops[1]).BeginAnimation(GradientStop.ColorProperty, animation2);
+            MessageBox.Show("Testing lock screen functionality!", "Test", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Test failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 
     protected override void OnClosed(EventArgs e)
     {
-        _clockTimer.Stop();
+        try
+        {
+            _clockTimer?.Stop();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error stopping clock timer: {ex.Message}");
+        }
         base.OnClosed(e);
     }
 

@@ -17,7 +17,7 @@ obj/
 # testing
 /coverage
 .idea/
-
+.claude/
 # production
 /build
 

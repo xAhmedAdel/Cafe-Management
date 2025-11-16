@@ -155,4 +155,32 @@ public class SessionService : ISessionService
         var cost = hours * hourlyRate;
         return Money.FromDecimal(Math.Round(cost, 2));
     }
+
+    public async Task<List<Session>> GetExpiredSessionsAsync()
+    {
+        var currentTime = DateTime.UtcNow;
+        var expiredSessions = await _unitOfWork.Sessions.FindAsync(s =>
+            s.EndTime.HasValue &&
+            s.EndTime.Value <= currentTime &&
+            s.Status == SessionStatus.Active);
+
+        return expiredSessions.ToList();
+    }
+
+    public async Task<Session> UpdateSessionAsync(Session session)
+    {
+        await _unitOfWork.Sessions.UpdateAsync(session);
+        await _unitOfWork.SaveChangesAsync();
+        return session;
+    }
+
+    public async Task<List<Session>> GetAllSessionsAsync()
+    {
+        return (await _unitOfWork.Sessions.GetAllAsync()).ToList();
+    }
+
+    public async Task<List<Session>> GetActiveSessionsAsync()
+    {
+        return (await _unitOfWork.Sessions.FindAsync(s => s.Status == SessionStatus.Active)).ToList();
+    }
 }

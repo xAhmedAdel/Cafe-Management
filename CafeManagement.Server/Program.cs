@@ -14,6 +14,7 @@ builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddControllers();
 builder.Services.AddCafeManagementServices();
+builder.Services.AddHostedService<CafeManagement.Server.Services.SessionTimerService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -52,7 +53,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
+
+app.UseStaticFiles(); // Enable static file serving
 
 app.UseCors("AllowAll");
 
