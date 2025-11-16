@@ -91,6 +91,8 @@ public class CafeManagementDbContext : DbContext
 
     private void SeedData(ModelBuilder modelBuilder)
     {
+        var fixedDateTime = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
         var adminUser = new User
         {
             Id = 1,
@@ -99,8 +101,8 @@ public class CafeManagementDbContext : DbContext
             Email = "admin@cafemanagement.com",
             Role = Core.Enums.UserRole.Admin,
             Balance = 1000.00m,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            CreatedAt = fixedDateTime,
+            UpdatedAt = fixedDateTime
         };
 
         modelBuilder.Entity<User>().HasData(adminUser);
@@ -113,8 +115,8 @@ public class CafeManagementDbContext : DbContext
             Email = "operator@cafemanagement.com",
             Role = Core.Enums.UserRole.Operator,
             Balance = 0.00m,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            CreatedAt = fixedDateTime,
+            UpdatedAt = fixedDateTime
         };
 
         modelBuilder.Entity<User>().HasData(operatorUser);

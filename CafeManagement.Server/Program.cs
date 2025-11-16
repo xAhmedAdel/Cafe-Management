@@ -1,7 +1,9 @@
 using CafeManagement.Application;
 using CafeManagement.Infrastructure;
 using CafeManagement.Infrastructure.Data;
+using CafeManagement.Server.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -11,6 +13,7 @@ builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddControllers();
+builder.Services.AddCafeManagementServices();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -57,6 +60,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<CafeManagementHub>("/hub/cafemanagement");
 
 using (var scope = app.Services.CreateScope())
 {
