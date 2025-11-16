@@ -41,6 +41,7 @@ public interface IScreenCaptureService
     Task<byte[]> CaptureScreenAsync();
     Task<byte[]> CaptureScreenAsync(int x, int y, int width, int height);
     Task<byte[]> CaptureWindowAsync(IntPtr windowHandle);
+    byte[] CompressImage(byte[] imageData, int quality = 75);
 }
 
 public interface IRemoteControlService

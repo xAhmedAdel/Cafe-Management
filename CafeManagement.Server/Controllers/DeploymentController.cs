@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using System.IO.Compression;
 using System.Text.Json;
+using CafeManagement.Application.DTOs;
 
 namespace CafeManagement.Server.Controllers;
 
@@ -218,7 +220,10 @@ public class DeploymentController : ControllerBase
     private async Task CreateMockUpdatePackage(string updatePath)
     {
         var updateDir = Path.GetDirectoryName(updatePath);
-        Directory.CreateDirectory(updateDir, true);
+        if (!string.IsNullOrEmpty(updateDir))
+        {
+            Directory.CreateDirectory(updateDir);
+        }
 
         // Create a mock executable (this would be the actual updated client)
         await System.IO.File.WriteAllBytesAsync(updatePath, new byte[1024]); // 1KB mock file
@@ -227,7 +232,10 @@ public class DeploymentController : ControllerBase
     private async Task CreateMockInstaller(string installerPath)
     {
         var installerDir = Path.GetDirectoryName(installerPath);
-        Directory.CreateDirectory(installerDir, true);
+        if (!string.IsNullOrEmpty(installerDir))
+        {
+            Directory.CreateDirectory(installerDir);
+        }
 
         // Create a mock installer (this would be the actual installer)
         await System.IO.File.WriteAllBytesAsync(installerPath, new byte[2048]); // 2KB mock file

@@ -6,6 +6,8 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using CafeManagement.Client.Services.Interfaces;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Jpeg;
 
 namespace CafeManagement.Client.Services;
 
@@ -81,36 +83,35 @@ public class ScreenCaptureService : IScreenCaptureService
     {
         try
         {
-            using (var bitmap = new RenderTargetBitmap(width, height, 96, 96, PixelFormats.Pbgra32))
+            var bitmap = new RenderTargetBitmap(width, height, 96, 96, PixelFormats.Pbgra32);
+
+            // Create a visual representation of the screen area
+            var visual = new DrawingVisual();
+            using (var context = visual.RenderOpen())
             {
-                // Create a visual representation of the screen area
-                var visual = new DrawingVisual();
-                using (var context = visual.RenderOpen())
+                // Capture the specified screen area
+                var brush = new VisualBrush(null)
                 {
-                    // Capture the specified screen area
-                    var brush = new VisualBrush(null)
-                    {
-                        Stretch = Stretch.None,
-                        AlignmentX = AlignmentX.Left,
-                        AlignmentY = AlignmentY.Top,
-                        Viewbox = new Rect(x, y, width, height),
-                        ViewboxUnits = BrushMappingMode.Absolute
-                    };
+                    Stretch = Stretch.None,
+                    AlignmentX = AlignmentX.Left,
+                    AlignmentY = AlignmentY.Top,
+                    Viewbox = new Rect(x, y, width, height),
+                    ViewboxUnits = BrushMappingMode.Absolute
+                };
 
-                    context.DrawRectangle(brush, null, new Rect(0, 0, width, height));
-                }
+                context.DrawRectangle(brush, null, new Rect(0, 0, width, height));
+            }
 
-                bitmap.Render(visual);
+            bitmap.Render(visual);
 
-                // Convert to byte array
-                var encoder = new PngBitmapEncoder();
-                encoder.Frames.Add(BitmapFrame.Create(bitmap));
+            // Convert to byte array
+            var encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(bitmap));
 
-                using (var stream = new MemoryStream())
-                {
-                    encoder.Save(stream);
-                    return stream.ToArray();
-                }
+            using (var stream = new MemoryStream())
+            {
+                encoder.Save(stream);
+                return stream.ToArray();
             }
         }
         catch (Exception ex)
@@ -174,7 +175,7 @@ public class ScreenCaptureService : IScreenCaptureService
                     Quality = quality
                 };
 
-                image.SaveAsJpeg(outputMemoryStream, encoder);
+                image.SaveAsJpeg(outputMemoryStream);
                 return outputMemoryStream.ToArray();
             }
         }

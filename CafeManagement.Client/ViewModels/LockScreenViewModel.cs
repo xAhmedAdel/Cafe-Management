@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using CafeManagement.Client.Services;
+using CafeManagement.Client.Services.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -55,7 +56,6 @@ public partial class LockScreenViewModel : ObservableObject
         _systemService = systemService;
         _signalRService = signalRService;
 
-        InitializeCommands();
         UpdateClientInfo();
     }
 
@@ -79,13 +79,6 @@ public partial class LockScreenViewModel : ObservableObject
     private async Task ExitAsync()
     {
         await _systemService.ExitApplication();
-    }
-
-    private void InitializeCommands()
-    {
-        UnlockCommand = new AsyncRelayCommand(UnlockAsync);
-        AdminUnlockCommand = new AsyncRelayCommand(AdminUnlockAsync);
-        ExitCommand = new AsyncRelayCommand(ExitAsync);
     }
 
     public async Task InitializeAsync()
@@ -150,8 +143,7 @@ public partial class LockScreenViewModel : ObservableObject
     private void StartCountdown()
     {
         StopCountdown();
-        _countdownTimer = new Timer(UpdateTimeRemaining, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
-        _countdownTimer.Change(TimeSpan.Zero, TimeSpan.FromSeconds(1));
+        _countdownTimer = new Timer(state => UpdateTimeRemaining(), null, 0, 1000);
     }
 
     private void StopCountdown()
@@ -186,7 +178,7 @@ public partial class LockScreenViewModel : ObservableObject
     {
         if (minutes <= 5)
         {
-            StatusMessage = $"Warning: Only {minutes} minute{(minutes != 1 ? "s" : "") remaining!";
+            StatusMessage = $"Warning: Only {minutes} minute{(minutes != 1 ? "s" : "")} remaining!";
         }
     }
 

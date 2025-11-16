@@ -20,6 +20,7 @@ public interface ICafeManagementHubClient
     Task LockWorkstation();
     Task StartRemoteControl();
     Task StopRemoteControl();
+    Task ClientDisconnected(int clientId);
 }
 
 public class CafeManagementHub : Hub<ICafeManagementHubClient>

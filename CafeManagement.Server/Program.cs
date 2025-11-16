@@ -60,7 +60,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapHub<CafeManagementHub>("/hub/cafemanagement");
+app.MapHub<CafeManagement.Server.Hubs.CafeManagementHub>("/hub/cafemanagement");
 
 using (var scope = app.Services.CreateScope())
 {

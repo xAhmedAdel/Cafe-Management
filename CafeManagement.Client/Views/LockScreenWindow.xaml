@@ -63,13 +63,13 @@
                                FontFamily="Consolas">
                         <TextBlock.Triggers>
                             <DataTrigger Binding="{Binding TimeRemainingMinutes}" Value="5">
-                                <Setter Property="Foreground" Value="#FFFF00"/>
+                                <Setter Property="TextBlock.Foreground" Value="#FFFF00"/>
                             </DataTrigger>
                             <DataTrigger Binding="{Binding TimeRemainingMinutes}" Value="2">
-                                <Setter Property="Foreground" Value="#FF6600"/>
+                                <Setter Property="TextBlock.Foreground" Value="#FF6600"/>
                             </DataTrigger>
                             <DataTrigger Binding="{Binding TimeRemainingMinutes}" Value="0">
-                                <Setter Property="Foreground" Value="#FF0000"/>
+                                <Setter Property="TextBlock.Foreground" Value="#FF0000"/>
                             </DataTrigger>
                         </TextBlock.Triggers>
                     </TextBlock>

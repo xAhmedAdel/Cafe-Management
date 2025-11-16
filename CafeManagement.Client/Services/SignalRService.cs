@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Logging;
 using CafeManagement.Client.Services.Interfaces;
 using CafeManagement.Application.DTOs;
+using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
 
@@ -375,7 +376,7 @@ public class SignalRService : ISignalRService, IDisposable
 
     public void Dispose()
     {
-        _hubConnection?.DisposeAsync().Wait();
+        _hubConnection?.DisposeAsync().AsTask().Wait();
         _httpClient?.Dispose();
     }
 }

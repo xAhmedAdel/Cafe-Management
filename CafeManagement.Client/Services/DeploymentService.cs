@@ -1,11 +1,12 @@
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
+using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
-using Microsoft.Win32.TaskScheduler;
 using CafeManagement.Client.Services.Interfaces;
-using Process = System.Diagnostics.Process;
 
 namespace CafeManagement.Client.Services;
 
@@ -210,22 +211,8 @@ public class DeploymentService : IDeploymentService
             var startupKey = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", true);
             startupKey?.SetValue(_serviceName, appPath);
 
-            // Create scheduled task for auto-start
-            using (var taskService = new TaskService())
-            {
-                var taskDefinition = TaskService.Instance.NewTaskDefinition();
-                taskDefinition.RegistrationInfo.Description = "Cafe Management Client Auto-Start";
-                taskDefinition.RegistrationInfo.Author = "CafeManagementSystem";
-
-                // Set trigger to start at logon
-                taskDefinition.Triggers.Add(new LogonTrigger());
-
-                // Set action to start the application
-                taskDefinition.Actions.Add(new ExecAction(appPath, null, null));
-
-                // Register the task
-                taskService.RootFolder.RegisterTaskDefinition("CafeManagementClientStart", taskDefinition);
-            }
+            // TaskScheduler functionality removed - using Registry startup only
+            _logger.LogDebug("TaskScheduler configuration skipped (requires external package)");
 
             _logger.LogInformation("Windows startup configured successfully");
         }

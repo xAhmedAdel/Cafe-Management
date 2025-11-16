@@ -1,8 +1,10 @@
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 using CafeManagement.Client.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -111,8 +113,8 @@ public partial class LockScreenWindow : Window
             var currentLeft = Canvas.GetLeft(particle);
 
             // Floating motion
-            var newTop = currentTop - _random.NextDouble(0.5, 2.0);
-            var newLeft = currentLeft + (_random.NextDouble(-1.0, 1.0) - 0.5);
+            var newTop = currentTop - (0.5 + _random.NextDouble() * 1.5);
+            var newLeft = currentLeft + (_random.NextDouble() * 2.0 - 1.0);
 
             if (newTop < -10)
             {
