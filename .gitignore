@@ -1,0 +1,38 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/Frontend/node_modules
+.pnp
+.png
+.pnp.js
+*Debug/
+.vs/
+bin/
+publish/
+**/Debug/
+Debug/
+Release/
+libs/
+obj/
+# testing
+/coverage
+.idea/
+
+# production
+/build
+
+# misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+shell.ini
+qodana.yaml
+nul
+*.DotSettings.user
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
