@@ -750,15 +750,15 @@
 
             <nav class="nav-section">
                 <div class="nav-section-title">Management</div>
-                <a href="/admin/user-management.html" class="nav-item">
+                <a href="user-management.html" class="nav-item">
                     <i class="fas fa-users"></i>
                     <span>Users</span>
                 </a>
-                <a href="/admin/reports.html" class="nav-item">
+                <a href="reports.html" class="nav-item">
                     <i class="fas fa-chart-bar"></i>
                     <span>Reports</span>
                 </a>
-                <a href="/admin/billing.html" class="nav-item">
+                <a href="billing.html" class="nav-item">
                     <i class="fas fa-dollar-sign"></i>
                     <span>Billing</span>
                 </a>
@@ -766,15 +766,15 @@
 
             <nav class="nav-section">
                 <div class="nav-section-title">Control</div>
-                <a href="/admin/view-screen.html" class="nav-item">
+                <a href="view-screen.html" class="nav-item">
                     <i class="fas fa-desktop"></i>
                     <span>View Screen</span>
                 </a>
-                <a href="/admin/remote-control.html" class="nav-item">
+                <a href="remote-control.html" class="nav-item">
                     <i class="fas fa-gamepad"></i>
                     <span>Remote Control</span>
                 </a>
-                <a href="/admin/system-info.html" class="nav-item">
+                <a href="system-info.html" class="nav-item">
                     <i class="fas fa-info-circle"></i>
                     <span>System Info</span>
                 </a>
@@ -782,15 +782,15 @@
 
             <nav class="nav-section">
                 <div class="nav-section-title">System</div>
-                <a href="/admin/deployment.html" class="nav-item">
+                <a href="deployment.html" class="nav-item">
                     <i class="fas fa-rocket"></i>
                     <span>Deployment</span>
                 </a>
-                <a href="/admin/security.html" class="nav-item">
+                <a href="security.html" class="nav-item">
                     <i class="fas fa-shield-alt"></i>
                     <span>Security</span>
                 </a>
-                <a href="/admin/debug.html" target="_blank" class="nav-item">
+                <a href="debug.html" target="_blank" class="nav-item">
                     <i class="fas fa-bug"></i>
                     <span>Debug</span>
                 </a>
@@ -1071,9 +1071,6 @@
                     return;
                 }
 
-                const statusClass = client.isOnline ? 'online' : 'offline';
-                const statusText = client.isOnline ? 'Online' : 'Offline';
-
                 clientsList.innerHTML = clients.map(client => `
                     <div class="client-card fade-in">
                         <div class="client-header">
@@ -1081,8 +1078,8 @@
                                 <i class="fas fa-desktop"></i>
                                 ${client.name}
                             </div>
-                            <span class="client-status ${statusClass}">
-                                ${statusText}
+                            <span class="client-status ${client.status}">
+                                ${client.status}
                             </span>
                         </div>
                         <div class="client-info">
@@ -1095,7 +1092,7 @@
                                 <i class="fas fa-eye"></i>
                                 View
                             </button>
-                            ${client.isOnline ? `
+                            ${client.status === 'online' ? `
                                 <button class="btn btn-sm" onclick="lockClient(${client.id})">
                                     <i class="fas fa-lock"></i>
                                     Lock
@@ -1348,7 +1345,7 @@
                     currentSection === 'sessions') {
                     loadData();
                 }
-            }, 5000); // Refresh every 5 seconds
+            }, 30000); // Refresh every 30 seconds
         }
 
         // Legacy Functions for Compatibility
