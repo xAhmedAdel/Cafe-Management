@@ -51,6 +51,18 @@ public class SessionsController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("active/{clientId}")]
+    [AllowAnonymous]
+    public async Task<ActionResult<SessionDto?>> GetActiveByClient(int clientId)
+    {
+        var result = await _mediator.Send(new GetActiveSessionByClientQuery(clientId));
+
+        if (result == null)
+            return NotFound();
+
+        return Ok(result);
+    }
+
     [HttpGet("user/{userId}")]
     public async Task<ActionResult<IEnumerable<SessionDto>>> GetByUser(int userId)
     {
@@ -91,6 +103,7 @@ public class SessionsController : ControllerBase
     }
 
     [HttpPost("{id}/end")]
+    [AllowAnonymous]
     public async Task<ActionResult<SessionDto>> EndSession(int id)
     {
         try

@@ -56,6 +56,43 @@ public class AdminController : ControllerBase
         }
     }
 
+    [HttpGet("clients/{clientId}")]
+    public async Task<ActionResult<ClientDto>> GetClient(int clientId)
+    {
+        try
+        {
+            using var scope = _serviceProvider.CreateScope();
+            var clientService = scope.ServiceProvider.GetRequiredService<IClientService>();
+
+            var client = await clientService.GetClientByIdAsync(clientId);
+            if (client == null)
+            {
+                return NotFound($"Client with ID {clientId} not found");
+            }
+
+            var clientDto = new ClientDto
+            {
+                Id = client.Id,
+                Name = client.Name,
+                IPAddress = client.IPAddress,
+                MACAddress = client.MACAddress,
+                Status = client.Status,
+                LastSeen = client.LastSeen,
+                CurrentSessionId = client.CurrentSessionId
+            };
+
+            // Add online status
+            clientDto.IsOnline = client.Status >= ClientStatus.Online && client.Status <= ClientStatus.InSession;
+
+            return Ok(clientDto);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting client {ClientId}", clientId);
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
     [HttpPost("sessions/start")]
     public async Task<ActionResult> StartSession([FromBody] StartSessionRequest request)
     {
@@ -300,39 +337,7 @@ public class AdminController : ControllerBase
         }
     }
 
-    // Remote Monitoring Endpoints
-    [HttpPost("clients/{clientId}/start-remote-control")]
-    public async Task<ActionResult> StartRemoteControl(int clientId)
-    {
-        try
-        {
-            _logger.LogInformation($"Starting remote control for client {clientId}");
-            await _hubContext.Clients.All.SendAsync("StartRemoteControl");
-            return Ok(new { message = $"Remote control started for client {clientId}" });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, $"Error starting remote control for client {clientId}");
-            return StatusCode(500, "Internal server error");
-        }
-    }
-
-    [HttpPost("clients/{clientId}/stop-remote-control")]
-    public async Task<ActionResult> StopRemoteControl(int clientId)
-    {
-        try
-        {
-            _logger.LogInformation($"Stopping remote control for client {clientId}");
-            await _hubContext.Clients.All.SendAsync("StopRemoteControl");
-            return Ok(new { message = $"Remote control stopped for client {clientId}" });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, $"Error stopping remote control for client {clientId}");
-            return StatusCode(500, "Internal server error");
-        }
-    }
-
+    
     [HttpPost("clients/{clientId}/simulate-mouse")]
     public async Task<ActionResult> SimulateMouse(int clientId, [FromBody] MouseInputRequest request)
     {
@@ -377,6 +382,167 @@ public class AdminController : ControllerBase
             return StatusCode(500, "Internal server error");
         }
     }
+
+    // New remote monitoring endpoints
+    [HttpPost("clients/{clientId}/screenshot")]
+    public async Task<ActionResult> CaptureScreenshot(int clientId)
+    {
+        try
+        {
+            _logger.LogInformation($"Attempting to capture screenshot from client {clientId}");
+
+            // Request screenshot from client
+            await _hubContext.Clients.Group($"Client_{clientId}").SendAsync("CaptureScreenshot");
+            _logger.LogInformation($"SignalR 'CaptureScreenshot' message sent to group Client_{clientId}");
+
+            // Store screenshot request for retrieval
+            _screenshotRequests[clientId] = DateTime.UtcNow;
+
+            return Ok(new { message = $"Screenshot request sent to client {clientId}" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error requesting screenshot from client {clientId}");
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    [HttpPost("clients/{clientId}/start-remote-control")]
+    public async Task<ActionResult> StartRemoteControlSession(int clientId)
+    {
+        try
+        {
+            await _hubContext.Clients.Group($"Client_{clientId}").SendAsync("StartRemoteControl");
+            return Ok(new { message = $"Remote control started for client {clientId}" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error starting remote control for client {clientId}");
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    [HttpPost("clients/{clientId}/stop-remote-control")]
+    public async Task<ActionResult> StopRemoteControlSession(int clientId)
+    {
+        try
+        {
+            await _hubContext.Clients.Group($"Client_{clientId}").SendAsync("StopRemoteControl");
+            return Ok(new { message = $"Remote control stopped for client {clientId}" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error stopping remote control for client {clientId}");
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    [HttpGet("clients/{clientId}/system-info")]
+    public async Task<ActionResult> GetSystemInfo(int clientId)
+    {
+        try
+        {
+            // Get client info from database
+            using var scope = _serviceProvider.CreateScope();
+            var clientService = scope.ServiceProvider.GetRequiredService<IClientService>();
+            var client = await clientService.GetClientByIdAsync(clientId);
+
+            if (client == null)
+                return NotFound(new { error = "Client not found" });
+
+            // Request current system info from client
+            await _hubContext.Clients.Group($"Client_{clientId}").SendAsync("GetSystemInfo");
+
+            // Return basic info immediately
+            var systemInfo = new
+            {
+                computerName = Environment.MachineName,
+                osVersion = Environment.OSVersion.ToString(),
+                processor = Environment.ProcessorCount + " cores",
+                totalMemory = $"{GC.GetTotalMemory(false) / 1024 / 1024} MB",
+                availableMemory = $"{GC.GetTotalMemory(true) / 1024 / 1024} MB",
+                ipAddress = client.IPAddress,
+                macAddress = client.MACAddress,
+                userName = Environment.UserName,
+                lastUpdated = DateTime.UtcNow
+            };
+
+            return Ok(systemInfo);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error getting system info for client {clientId}");
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    [HttpPost("clients/{clientId}/mouse-click")]
+    public async Task<ActionResult> SendMouseClick(int clientId, [FromBody] MouseInputRequest request)
+    {
+        try
+        {
+            await _hubContext.Clients.Group($"Client_{clientId}").SendAsync("SimulateMouse", request);
+            return Ok(new { message = $"Mouse click sent to client {clientId}" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error sending mouse click to client {clientId}");
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    [HttpPost("clients/{clientId}/keyboard-input")]
+    public async Task<ActionResult> SendKeyboardInput(int clientId, [FromBody] KeyboardInputRequest request)
+    {
+        try
+        {
+            await _hubContext.Clients.Group($"Client_{clientId}").SendAsync("SimulateKeyboard", request);
+            return Ok(new { message = $"Keyboard input sent to client {clientId}" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error sending keyboard input to client {clientId}");
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    [HttpPost("clients/{clientId}/text-input")]
+    public async Task<ActionResult> SendTextInput(int clientId, [FromBody] TextInputRequest request)
+    {
+        try
+        {
+            await _hubContext.Clients.Group($"Client_{clientId}").SendAsync("SimulateText", request);
+            return Ok(new { message = $"Text input sent to client {clientId}" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error sending text input to client {clientId}");
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    // SignalR Hub method for receiving screenshots
+    [HttpPost("screenshot/{clientId}")]
+    public async Task<ActionResult> ReceiveScreenshot(int clientId, [FromBody] ScreenshotDataRequest request)
+    {
+        try
+        {
+            // Store screenshot for immediate retrieval
+            _latestScreenshots[clientId] = request.ScreenshotData;
+
+            _logger.LogInformation($"Screenshot received from client {clientId}");
+            return Ok(new { message = "Screenshot received successfully" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error receiving screenshot from client {clientId}");
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    // Private fields for storing data
+    private static readonly Dictionary<int, DateTime> _screenshotRequests = new();
+    private static readonly Dictionary<int, string> _latestScreenshots = new();
 }
 
 public class StartSessionRequest
@@ -395,16 +561,21 @@ public class MouseInputRequest
 {
     public int X { get; set; }
     public int Y { get; set; }
-    public string Action { get; set; } // "click", "move", "right-click", etc.
+    public string Action { get; set; } = "click"; // "click", "move", "right-click", etc.
 }
 
 public class KeyboardInputRequest
 {
     public int KeyCode { get; set; }
-    public string Action { get; set; } // "keydown", "keyup"
+    public string Action { get; set; } = "keydown"; // "keydown", "keyup"
 }
 
 public class TextInputRequest
 {
-    public string Text { get; set; }
+    public string Text { get; set; } = string.Empty;
+}
+
+public class ScreenshotDataRequest
+{
+    public string ScreenshotData { get; set; } = string.Empty; // Base64 encoded image
 }

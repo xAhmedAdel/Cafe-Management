@@ -17,6 +17,71 @@ namespace CafeManagement.Infrastructure.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.0");
 
+            modelBuilder.Entity("CafeManagement.Core.Entities.BillingSettings", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(10)
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("L.E");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("HourlyRate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue(20.00m);
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("MinimumSessionDuration")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("1 hour");
+
+                    b.Property<bool>("RoundUpToNearestHour")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(true);
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("BillingSettings");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Currency = "L.E",
+                            Description = "Default billing configuration",
+                            HourlyRate = 20.00m,
+                            IsActive = true,
+                            MinimumSessionDuration = "1 hour",
+                            RoundUpToNearestHour = true,
+                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                        });
+                });
+
             modelBuilder.Entity("CafeManagement.Core.Entities.Client", b =>
                 {
                     b.Property<int>("Id")
@@ -67,6 +132,125 @@ namespace CafeManagement.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("Clients");
+                });
+
+            modelBuilder.Entity("CafeManagement.Core.Entities.ClientDeployment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("AutoUpdateEnabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(true);
+
+                    b.Property<int?>("ClientId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ClientName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("IpAddress")
+                        .IsRequired()
+                        .HasMaxLength(15)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("LastDeployment")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("LastSeen")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Location")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("MacAddress")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Status")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(0);
+
+                    b.Property<string>("TargetVersion")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("1.0.0");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Version")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("1.0.0");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClientId")
+                        .IsUnique();
+
+                    b.ToTable("ClientDeployments");
+                });
+
+            modelBuilder.Entity("CafeManagement.Core.Entities.DeploymentLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("ClientDeploymentId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Details")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Level")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(1);
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PerformedBy")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("Success")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(true);
+
+                    b.Property<DateTime>("Timestamp")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClientDeploymentId");
+
+                    b.ToTable("DeploymentLogs");
                 });
 
             modelBuilder.Entity("CafeManagement.Core.Entities.LockScreenConfig", b =>
@@ -223,6 +407,9 @@ namespace CafeManagement.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("AvailableMinutes")
+                        .HasColumnType("INTEGER");
+
                     b.Property<decimal>("Balance")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT")
@@ -234,6 +421,12 @@ namespace CafeManagement.Infrastructure.Migrations
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("LastLoginTime")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("PasswordHash")
@@ -263,9 +456,11 @@ namespace CafeManagement.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
+                            AvailableMinutes = 0,
                             Balance = 1000.00m,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "admin@cafemanagement.com",
+                            IsActive = true,
                             PasswordHash = "AQAAAAEAACcQAAAAEKqgkTvtFvKFGMGj3QF4YZL3pqYOjOEgkKhfYxYU+0Q=",
                             Role = 0,
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
@@ -274,9 +469,11 @@ namespace CafeManagement.Infrastructure.Migrations
                         new
                         {
                             Id = 2,
+                            AvailableMinutes = 0,
                             Balance = 0.00m,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "operator@cafemanagement.com",
+                            IsActive = true,
                             PasswordHash = "AQAAAAEAACcQAAAAEKqgkTvtFvKFGMGj3QF4YZL3pqYOjOEgkKhfYxYU+0Q=",
                             Role = 1,
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
@@ -292,6 +489,27 @@ namespace CafeManagement.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("CurrentSession");
+                });
+
+            modelBuilder.Entity("CafeManagement.Core.Entities.ClientDeployment", b =>
+                {
+                    b.HasOne("CafeManagement.Core.Entities.Client", "Client")
+                        .WithOne()
+                        .HasForeignKey("CafeManagement.Core.Entities.ClientDeployment", "ClientId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Client");
+                });
+
+            modelBuilder.Entity("CafeManagement.Core.Entities.DeploymentLog", b =>
+                {
+                    b.HasOne("CafeManagement.Core.Entities.ClientDeployment", "ClientDeployment")
+                        .WithMany("DeploymentLogs")
+                        .HasForeignKey("ClientDeploymentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ClientDeployment");
                 });
 
             modelBuilder.Entity("CafeManagement.Core.Entities.LockScreenConfig", b =>
@@ -349,6 +567,11 @@ namespace CafeManagement.Infrastructure.Migrations
                     b.Navigation("Sessions");
 
                     b.Navigation("UsageLogs");
+                });
+
+            modelBuilder.Entity("CafeManagement.Core.Entities.ClientDeployment", b =>
+                {
+                    b.Navigation("DeploymentLogs");
                 });
 
             modelBuilder.Entity("CafeManagement.Core.Entities.User", b =>

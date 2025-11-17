@@ -9,7 +9,21 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(dotnet run:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(git push:*)",
+      "Skill(superpowers:brainstorming)",
+      "Bash(taskkill:*)",
+      "Bash(cmd:*)",
+      "Bash(tasklist:*)",
+      "Bash(findstr:*)",
+      "Bash(wmic:*)",
+      "Bash(powershell:*)",
+      "Bash(del:*)",
+      "mcp__web-search-prime__webSearchPrime",
+      "Bash(dotnet ef:*)",
+      "Bash(start http://localhost:5032)",
+      "Bash(start http://localhost:5032/admin)",
+      "Bash(netstat:*)"
     ],
     "deny": [],
     "ask": []

@@ -85,6 +85,25 @@ public class CafeManagementService : ICafeManagementService
         }
     }
 
+    public async Task<SessionDto?> GetActiveSessionAsync(int clientId)
+    {
+        try
+        {
+            var response = await _httpClient.GetAsync($"{_serverUrl}/api/sessions/active/{clientId}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadFromJsonAsync<SessionDto>();
+            }
+
+            return null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     public async Task NotifyHeartbeatAsync()
     {
         try
@@ -95,6 +114,44 @@ public class CafeManagementService : ICafeManagementService
         catch
         {
             // Handle exception silently for heartbeat
+        }
+    }
+
+    public async Task<ClientDto?> GetCurrentClientAsync()
+    {
+        try
+        {
+            var macAddress = GetMacAddress();
+            var response = await _httpClient.GetAsync($"{_serverUrl}/api/clients/mac/{macAddress}");
+            if (response.IsSuccessStatusCode)
+            {
+                var client = await response.Content.ReadFromJsonAsync<ClientDto>();
+                return client;
+            }
+            return null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public async Task<SessionDto?> EndSessionAsync(int sessionId)
+    {
+        try
+        {
+            var response = await _httpClient.PostAsync($"{_serverUrl}/api/sessions/{sessionId}/end", null);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadFromJsonAsync<SessionDto>();
+            }
+
+            return null;
+        }
+        catch
+        {
+            return null;
         }
     }
 

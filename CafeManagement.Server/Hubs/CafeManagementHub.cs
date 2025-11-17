@@ -171,15 +171,22 @@ public class CafeManagementHub : Hub<ICafeManagementHubClient>
     public async Task ReceiveScreenshot(byte[] imageData)
     {
         var connectionId = Context.ConnectionId;
+        _logger.LogInformation($"🖼️ ReceiveScreenshot called from connection {connectionId}, data length: {imageData.Length} bytes");
 
         // Find which client sent this screenshot
         if (_connectedClients.TryGetValue(connectionId, out var clientId))
         {
+            _logger.LogInformation($"📤 Broadcasting screenshot from client {clientId} ({imageData.Length} bytes) to Operators and Administrators groups");
+
             // Broadcast screenshot to all connected operators
             await Clients.Group("Operators").ReceiveScreenshot(imageData);
             await Clients.Group("Administrators").ReceiveScreenshot(imageData);
 
-            _logger.LogDebug($"Screenshot received from client {clientId}: {imageData.Length} bytes");
+            _logger.LogInformation($"✅ Screenshot broadcast completed from client {clientId}");
+        }
+        else
+        {
+            _logger.LogWarning($"❌ Could not find client ID for connection {connectionId}");
         }
     }
 

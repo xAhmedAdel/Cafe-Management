@@ -9,6 +9,8 @@ public record GetAllSessionsQuery() : IRequest<IEnumerable<SessionDto>>;
 
 public record GetSessionsByClientQuery(int ClientId) : IRequest<IEnumerable<SessionDto>>;
 
+public record GetActiveSessionByClientQuery(int ClientId) : IRequest<SessionDto?>;
+
 public record GetSessionsByUserQuery(int UserId) : IRequest<IEnumerable<SessionDto>>;
 
 public record GetActiveSessionsQuery() : IRequest<IEnumerable<SessionDto>>;

@@ -1,0 +1,131 @@
+using System.Windows;
+using System.Drawing;
+using Microsoft.Extensions.Logging;
+using CafeManagement.Client.Services.Interfaces;
+
+// Explicit use of System.Windows.Forms types
+using NotifyIconType = System.Windows.Forms.NotifyIcon;
+using ToolTipIconType = System.Windows.Forms.ToolTipIcon;
+using ContextMenuStripType = System.Windows.Forms.ContextMenuStrip;
+using SystemIconsType = System.Drawing.SystemIcons;
+
+namespace CafeManagement.Client.Services;
+
+public class SystemTrayService : ISystemTrayService, IDisposable
+{
+    private readonly ILogger<SystemTrayService> _logger;
+    private NotifyIconType? _notifyIcon;
+    private readonly object _lock = new object();
+
+    public SystemTrayService(ILogger<SystemTrayService> logger)
+    {
+        _logger = logger;
+        InitializeSystemTray();
+    }
+
+    private void InitializeSystemTray()
+    {
+        lock (_lock)
+        {
+            if (_notifyIcon != null) return;
+
+            _notifyIcon = new NotifyIconType
+            {
+                Icon = SystemIconsType.Application,
+                Text = "Cafe Management Client",
+                Visible = true
+            };
+
+            // Create context menu
+            var contextMenu = new ContextMenuStripType();
+            contextMenu.Items.Add("Show", null, (s, e) => ShowWindow());
+            contextMenu.Items.Add("-");
+            contextMenu.Items.Add("Exit", null, (s, e) => Application.Current.Shutdown());
+
+            _notifyIcon.ContextMenuStrip = contextMenu;
+            _notifyIcon.DoubleClick += (s, e) => ShowWindow();
+
+            _logger.LogInformation("System tray initialized");
+        }
+    }
+
+    public void ShowBalloonTip(string title, string text, ToolTipIconType icon = ToolTipIconType.Info, int duration = 3000)
+    {
+        lock (_lock)
+        {
+            if (_notifyIcon != null)
+            {
+                _notifyIcon.ShowBalloonTip(title, text, icon, duration);
+                _logger.LogInformation($"Balloon tip shown: {title} - {text}");
+            }
+        }
+    }
+
+    public void UpdateToolTip(string text)
+    {
+        lock (_lock)
+        {
+            if (_notifyIcon != null)
+            {
+                _notifyIcon.Text = text;
+                _logger.LogInformation($"System tray tooltip updated: {text}");
+            }
+        }
+    }
+
+    public void UpdateIcon(Icon icon)
+    {
+        lock (_lock)
+        {
+            if (_notifyIcon != null)
+            {
+                _notifyIcon.Icon = icon;
+                _logger.LogInformation("System tray icon updated");
+            }
+        }
+    }
+
+    public void ShowWindow()
+    {
+        if (Application.Current.MainWindow != null)
+        {
+            Application.Current.MainWindow.WindowState = WindowState.Normal;
+            Application.Current.MainWindow.ShowInTaskbar = true;
+            Application.Current.MainWindow.Activate();
+            _logger.LogInformation("Window restored from system tray");
+        }
+    }
+
+    public void HideWindow()
+    {
+        if (Application.Current.MainWindow != null)
+        {
+            Application.Current.MainWindow.WindowState = WindowState.Minimized;
+            Application.Current.MainWindow.ShowInTaskbar = false;
+            _logger.LogInformation("Window hidden to system tray");
+        }
+    }
+
+    public void Dispose()
+    {
+        lock (_lock)
+        {
+            if (_notifyIcon != null)
+            {
+                _notifyIcon.Visible = false;
+                _notifyIcon.Dispose();
+                _notifyIcon = null;
+                _logger.LogInformation("System tray disposed");
+            }
+        }
+    }
+}
+
+public interface ISystemTrayService
+{
+    void ShowBalloonTip(string title, string text, ToolTipIconType icon = ToolTipIconType.Info, int duration = 3000);
+    void UpdateToolTip(string text);
+    void UpdateIcon(Icon icon);
+    void HideWindow();
+    void ShowWindow();
+}

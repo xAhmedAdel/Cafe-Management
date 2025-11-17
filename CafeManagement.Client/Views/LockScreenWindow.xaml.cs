@@ -5,7 +5,10 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using System.Globalization;
+using System.Windows.Data;
 using CafeManagement.Client.ViewModels;
+using CafeManagement.Client.Services.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CafeManagement.Client.Views;
@@ -13,15 +16,56 @@ namespace CafeManagement.Client.Views;
 public partial class LockScreenWindow : Window
 {
     private readonly LockScreenViewModel _viewModel;
+    private readonly UserLoginViewModel _userLoginViewModel;
+    private readonly ISystemTrayService _systemTrayService;
     private readonly DispatcherTimer _clockTimer;
     private readonly Random _random = new();
     private readonly List<Ellipse> _particles = new();
+    private UserDashboardWindow? _dashboardWindow;
 
-    public LockScreenWindow(LockScreenViewModel viewModel)
+    public UserLoginViewModel UserLoginViewModel => _userLoginViewModel;
+
+    public LockScreenWindow(LockScreenViewModel viewModel, ISystemTrayService systemTrayService)
     {
         InitializeComponent();
         _viewModel = viewModel;
+        _systemTrayService = systemTrayService;
+
+        // Create UserLoginViewModel with required services
+        var serviceProvider = ((App)System.Windows.Application.Current).ServiceProvider;
+        _userLoginViewModel = serviceProvider.GetRequiredService<UserLoginViewModel>();
+
+        // Subscribe to login success and dashboard events
+        _userLoginViewModel.UserLoginSuccess += (sender, args) =>
+        {
+            Dispatcher.Invoke(() =>
+            {
+                // Close lockscreen and show dashboard
+                ShowDashboardWindow();
+            });
+        };
+
+        _userLoginViewModel.ShowDashboardRequested += (sender, args) =>
+        {
+            Dispatcher.Invoke(() =>
+            {
+                ShowDashboardWindow();
+            });
+        };
+
+        _userLoginViewModel.HideDashboardRequested += (sender, args) =>
+        {
+            Dispatcher.Invoke(() =>
+            {
+                HideDashboardWindow();
+            });
+        };
+
         DataContext = _viewModel;
+
+        // Initialize system tray service
+        _systemTrayService.Initialize();
+        _systemTrayService.SetMainWindow(this);
 
         // Clock timer for updating time display
         _clockTimer = new DispatcherTimer
@@ -44,7 +88,7 @@ public partial class LockScreenWindow : Window
         // Test lock screen on Ctrl+L for testing purposes
         KeyDown += (sender, e) =>
         {
-            if (e.Key == Key.L && Keyboard.Modifiers == ModifierKeys.Control)
+            if (e.Key == System.Windows.Input.Key.L && Keyboard.Modifiers == ModifierKeys.Control)
             {
                 TestLockScreen();
             }
@@ -53,6 +97,9 @@ public partial class LockScreenWindow : Window
 
     private async void LockScreenWindow_Loaded(object sender, RoutedEventArgs e)
     {
+        // Initialize UserLoginViewModel
+        await _userLoginViewModel.InitializeAsync();
+
         // Animate entrance
         var scaleAnimation = new DoubleAnimation
         {
@@ -73,7 +120,7 @@ public partial class LockScreenWindow : Window
         await _viewModel.UpdateTimeRemaining();
     }
 
-    private void LockScreenWindow_KeyDown(object sender, KeyEventArgs e)
+    private void LockScreenWindow_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
     {
         // Ctrl+Alt+Del for admin unlock
         if (e.Key == Key.Delete && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control &&
@@ -111,7 +158,7 @@ public partial class LockScreenWindow : Window
         {
             Width = _random.Next(2, 8),
             Height = _random.Next(2, 8),
-            Fill = new SolidColorBrush(Color.FromArgb(100, 255, 255, 255))
+            Fill = new SolidColorBrush(System.Windows.Media.Color.FromArgb(100, 255, 255, 255))
         };
 
         Canvas.SetLeft(particle, _random.Next(0, (int)ActualWidth));
@@ -191,11 +238,11 @@ public partial class LockScreenWindow : Window
     {
         try
         {
-            MessageBox.Show("Testing lock screen functionality!", "Test", MessageBoxButton.OK, MessageBoxImage.Information);
+            System.Windows.MessageBox.Show("Testing lock screen functionality!", "Test", MessageBoxButton.OK, MessageBoxImage.Information);
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Test failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            System.Windows.MessageBox.Show($"Test failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
@@ -204,12 +251,40 @@ public partial class LockScreenWindow : Window
         try
         {
             _clockTimer?.Stop();
+            _systemTrayService?.Dispose();
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"Error stopping clock timer: {ex.Message}");
         }
         base.OnClosed(e);
+    }
+
+    private void Window_StateChanged(object sender, EventArgs e)
+    {
+        if (WindowState == WindowState.Minimized)
+        {
+            Hide();
+            ShowInTaskbar = false;
+            _systemTrayService?.Show();
+            _systemTrayService?.ShowBalloonTip("Cafe Management Client", "Application minimized to system tray", ToolTipIcon.Info);
+            _systemTrayService?.UpdateToolTip("Cafe Management - Minimized");
+        }
+    }
+
+    protected override void OnSourceInitialized(EventArgs e)
+    {
+        base.OnSourceInitialized(e);
+
+        // Add keyboard handler for minimizing
+        this.KeyDown += (sender, e) =>
+        {
+            if (e.Key == Key.Escape && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+            {
+                WindowState = WindowState.Minimized;
+                e.Handled = true;
+            }
+        };
     }
 
     public void ShowLockScreen()
@@ -222,5 +297,157 @@ public partial class LockScreenWindow : Window
     public void HideLockScreen()
     {
         Hide();
+    }
+
+    private void PasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
+    {
+        if (sender is PasswordBox passwordBox && _userLoginViewModel != null)
+        {
+            _userLoginViewModel.Password = passwordBox.Password;
+        }
+    }
+
+    public void SlidePanelIn()
+    {
+        var storyboard = (Storyboard)FindResource("SlidePanelIn");
+        storyboard.Begin();
+    }
+
+    public void SlidePanelOut()
+    {
+        var storyboard = (Storyboard)FindResource("SlidePanelOut");
+        storyboard.Begin();
+    }
+
+    private void ShowDashboardWindow()
+    {
+        try
+        {
+            // Clear lockscreen display before hiding
+            _viewModel.ClearSessionDisplay();
+
+            if (_dashboardWindow == null)
+            {
+                _dashboardWindow = new UserDashboardWindow(_userLoginViewModel);
+                _dashboardWindow.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            }
+
+            _dashboardWindow.Show();
+            HideLockScreen(); // Hide instead of just Hide to ensure proper cleanup
+
+            // Update system tray
+            _systemTrayService.UpdateToolTip("Cafe Management - User Logged In");
+        }
+        catch (Exception ex)
+        {
+            // Log error if needed
+            System.Diagnostics.Debug.WriteLine($"Error showing dashboard: {ex.Message}");
+        }
+    }
+
+    private void HideDashboardWindow()
+    {
+        try
+        {
+            _dashboardWindow?.Hide();
+        }
+        catch (Exception ex)
+        {
+            // Log error if needed
+            System.Diagnostics.Debug.WriteLine($"Error hiding dashboard: {ex.Message}");
+        }
+    }
+}
+
+public class BoolToColorConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is bool isConnected)
+        {
+            return isConnected ? Colors.LimeGreen : Colors.Red;
+        }
+        return Colors.Red;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+public class BoolToBrushConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is bool isConnected)
+        {
+            return isConnected ? new SolidColorBrush(Colors.LimeGreen) : new SolidColorBrush(Colors.Red);
+        }
+        return new SolidColorBrush(Colors.Red);
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+public class InverseBoolToVisibilityConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is bool boolValue)
+        {
+            return boolValue ? Visibility.Collapsed : Visibility.Visible;
+        }
+        return Visibility.Visible;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is Visibility visibility)
+        {
+            return visibility != Visibility.Visible;
+        }
+        return true;
+    }
+}
+
+public class StringToVisibilityConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is string stringValue)
+        {
+            return string.IsNullOrWhiteSpace(stringValue) ? Visibility.Collapsed : Visibility.Visible;
+        }
+        return Visibility.Collapsed;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+public class BoolToVisibilityConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is bool boolValue)
+        {
+            return boolValue ? Visibility.Visible : Visibility.Collapsed;
+        }
+        return Visibility.Collapsed;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is Visibility visibility)
+        {
+            return visibility == Visibility.Visible;
+        }
+        return false;
     }
 }

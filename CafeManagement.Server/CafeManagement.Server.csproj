@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CafeManagement.Application\CafeManagement.Application.csproj" />
+    <ProjectReference Include="..\CafeManagement.Core\CafeManagement.Core.csproj" />
     <ProjectReference Include="..\CafeManagement.Infrastructure\CafeManagement.Infrastructure.csproj" />
   </ItemGroup>
 

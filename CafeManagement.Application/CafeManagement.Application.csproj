@@ -20,4 +20,8 @@
     <ProjectReference Include="..\CafeManagement.Core\CafeManagement.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
+  </ItemGroup>
+
 </Project>

@@ -1,0 +1,418 @@
+<Window x:Class="CafeManagement.Client.Views.UserLoginWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:CafeManagement.Client.Views"
+        xmlns:vm="clr-namespace:CafeManagement.Client.ViewModels"
+        mc:Ignorable="d"
+        Title="Cafe Management - User Login"
+        Height="600"
+        Width="800"
+        WindowState="Maximized"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        Topmost="True"
+        Background="#2C3E50">
+
+    <Window.DataContext>
+        <vm:UserLoginViewModel/>
+    </Window.DataContext>
+
+    <Window.Resources>
+        <DropShadowEffect x:Key="DropShadowEffect"
+                          Color="Black"
+                          Opacity="0.3"
+                          ShadowDepth="5"
+                          BlurRadius="5"/>
+    </Window.Resources>
+
+    <Grid>
+        <!-- Background gradient -->
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#34495E" Offset="0"/>
+                <GradientStop Color="#2C3E50" Offset="1"/>
+            </LinearGradientBrush>
+        </Grid.Background>
+
+        <!-- Main content -->
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0"
+                Background="#1A252F"
+                Padding="20"
+                Margin="0,0,0,20">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <TextBlock Text="☕" FontSize="24" Foreground="#3498DB" Margin="0,0,10,0"/>
+                    <TextBlock Text="Cafe Management System"
+                               FontSize="20"
+                               FontWeight="Bold"
+                               Foreground="White"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <TextBlock Text="Client: "
+                               FontSize="12"
+                               Foreground="#95A5A6"
+                               VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding ClientInfo}"
+                               FontSize="12"
+                               FontWeight="Bold"
+                               Foreground="White"
+                               VerticalAlignment="Center"
+                               Margin="5,0,20,0"/>
+
+                    <Ellipse Width="10" Height="10"
+                             Fill="{Binding IsConnected, Converter={StaticResource BoolToColorConverter}}"
+                             VerticalAlignment="Center"
+                             Margin="0,0,5,0"/>
+                    <TextBlock Text="{Binding ConnectionStatus}"
+                               FontSize="12"
+                               Foreground="{Binding IsConnected, Converter={StaticResource BoolToColorConverter}}"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Main login form -->
+        <Grid Grid.Row="1" Margin="50">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1.5*"/>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="1.5*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Login panel (shown when not logged in) -->
+            <Border Grid.Column="1"
+                    Background="#FFFFFF"
+                    CornerRadius="10"
+                    Padding="40"
+                    Effect="{StaticResource DropShadowEffect}"
+                    Visibility="{Binding IsUserLoggedIn, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+                <StackPanel>
+                    <TextBlock Text="🔐" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+                    <TextBlock Text="User Login"
+                               FontSize="24"
+                               FontWeight="Bold"
+                               HorizontalAlignment="Center"
+                               Foreground="#2C3E50"
+                               Margin="0,0,0,30"/>
+
+                    <!-- Username field -->
+                    <StackPanel Margin="0,0,0,20">
+                        <TextBlock Text="Username:"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   Foreground="#34495E"
+                                   Margin="0,0,0,5"/>
+                        <TextBox Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"
+                                 Height="40"
+                                 FontSize="16"
+                                 Padding="10"
+                                 Background="#F8F9FA"
+                                 BorderBrush="#BDC3C7"
+                                 BorderThickness="1"/>
+                    </StackPanel>
+
+                    <!-- Password field -->
+                    <StackPanel Margin="0,0,0,20">
+                        <TextBlock Text="Password:"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   Foreground="#34495E"
+                                   Margin="0,0,0,5"/>
+                        <PasswordBox x:Name="PasswordBox"
+                                    Height="40"
+                                    FontSize="16"
+                                    Padding="10"
+                                    Background="#F8F9FA"
+                                    BorderBrush="#BDC3C7"
+                                    BorderThickness="1"
+                                    PasswordChanged="PasswordBox_PasswordChanged"/>
+                    </StackPanel>
+
+                    <!-- Status message -->
+                    <TextBlock Text="{Binding StatusMessage}"
+                               FontSize="14"
+                               Foreground="#E74C3C"
+                               HorizontalAlignment="Center"
+                               Margin="0,0,0,20"
+                               Visibility="{Binding StatusMessage, Converter={StaticResource StringToVisibilityConverter}}"/>
+
+                    <!-- Login button -->
+                    <Button Command="{Binding LoginCommand}"
+                            IsEnabled="{Binding CanLogin}"
+                            Height="45"
+                            FontSize="16"
+                            FontWeight="Bold"
+                            Background="#3498DB"
+                            Foreground="White"
+                            BorderThickness="0"
+                            Cursor="Hand">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}"
+                                                    CornerRadius="5"
+                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                    BorderBrush="{TemplateBinding BorderBrush}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                <Border.Effect>
+                                                    <DropShadowEffect BlurRadius="5" ShadowDepth="2" Opacity="0.3"/>
+                                                </Border.Effect>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#2980B9"/>
+                                    </Trigger>
+                                    <Trigger Property="IsEnabled" Value="False">
+                                        <Setter Property="Background" Value="#95A5A6"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🔑" Margin="0,0,10,0"/>
+                            <TextBlock Text="Login"/>
+                            <!-- Loading indicator -->
+                            <Grid Width="20" Height="20" Margin="10,0,0,0"
+                                  Visibility="{Binding IsLoggingIn, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <Ellipse Stroke="White" StrokeThickness="2" Fill="Transparent"/>
+                                <Ellipse Stroke="White" StrokeThickness="2" Fill="Transparent"
+                                         RenderTransform="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=ActualWidth, Converter={StaticResource WidthToScaleConverter}}"/>
+                            </Grid>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Admin unlock button -->
+                    <Button Command="{Binding RequestUnlockCommand}"
+                            Height="40"
+                            FontSize="14"
+                            Background="#E67E22"
+                            Foreground="White"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            Margin="0,20,0,0">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}"
+                                                    CornerRadius="5"
+                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                    BorderBrush="{TemplateBinding BorderBrush}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#D35400"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🔓" Margin="0,0,8,0"/>
+                            <TextBlock Text="Request Admin Unlock"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Border>
+
+            <!-- Session panel (shown when logged in) -->
+            <Border Grid.Column="1"
+                    Background="#FFFFFF"
+                    CornerRadius="10"
+                    Padding="40"
+                    Effect="{StaticResource DropShadowEffect}"
+                    Visibility="{Binding IsUserLoggedIn, Converter={StaticResource BoolToVisibilityConverter}}">
+                <StackPanel>
+                    <TextBlock Text="👤" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+                    <TextBlock Text="Active Session"
+                               FontSize="24"
+                               FontWeight="Bold"
+                               HorizontalAlignment="Center"
+                               Foreground="#27AE60"
+                               Margin="0,0,0,30"/>
+
+                    <!-- User info -->
+                    <Border Margin="0,0,0,30" Background="#F8F9FA" CornerRadius="5" Padding="20">
+                        <StackPanel>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="User:"
+                                           FontSize="14" FontWeight="SemiBold" Foreground="#7F8C8D" Margin="0,0,10,5"/>
+                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding CurrentUserName}"
+                                           FontSize="14" FontWeight="Bold" Foreground="#2C3E50" Margin="0,0,0,5"/>
+
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Started:"
+                                           FontSize="14" FontWeight="SemiBold" Foreground="#7F8C8D" Margin="0,0,10,5"/>
+                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SessionStartTime}"
+                                           FontSize="14" Foreground="#2C3E50" Margin="0,0,0,5"/>
+
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Rate:"
+                                           FontSize="14" FontWeight="SemiBold" Foreground="#7F8C8D" Margin="0,0,10,5"/>
+                                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding HourlyRate, StringFormat={}{0}/hour}"
+                                           FontSize="14" Foreground="#2C3E50" Margin="0,0,0,5"/>
+                            </Grid>
+
+                            <!-- Time remaining (if applicable) -->
+                            <StackPanel Visibility="{Binding ShowTimeRemaining, Converter={StaticResource BoolToVisibilityConverter}}"
+                                       Margin="0,30,0,30">
+                                <TextBlock Text="⏱️" FontSize="32" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                                <TextBlock Text="{Binding TimeRemainingFormatted}"
+                                           FontSize="36"
+                                           FontWeight="Bold"
+                                           HorizontalAlignment="Center"
+                                           Foreground="#E74C3C"/>
+                                <TextBlock Text="Time Remaining"
+                                           FontSize="16"
+                                           HorizontalAlignment="Center"
+                                           Foreground="#7F8C8D"/>
+                            </StackPanel>
+
+                            <!-- Status message -->
+                            <TextBlock Text="{Binding StatusMessage}"
+                                       FontSize="14"
+                                       FontWeight="SemiBold"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,0,0,20"
+                                       TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Action buttons -->
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <Button Command="{Binding ExtendSessionCommand}"
+                                        Height="45"
+                                        FontSize="14"
+                                        FontWeight="Bold"
+                                        Background="#27AE60"
+                                        Foreground="White"
+                                        BorderThickness="0"
+                                        Cursor="Hand"
+                                        Margin="0,0,10,0"
+                                        Padding="20,0">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}"
+                                                        CornerRadius="5"
+                                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                                        BorderBrush="{TemplateBinding BorderBrush}">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#229954"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="➕" Margin="0,0,8,0"/>
+                                <TextBlock Text="Extend 30 min"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button Command="{Binding LogoutCommand}"
+                                Height="45"
+                                FontSize="14"
+                                FontWeight="Bold"
+                                Background="#E74C3C"
+                                Foreground="White"
+                                BorderThickness="0"
+                                Cursor="Hand"
+                                Padding="20,0">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}"
+                                                        CornerRadius="5"
+                                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                                        BorderBrush="{TemplateBinding BorderBrush}">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#C0392B"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="🚪" Margin="0,0,8,0"/>
+                                <TextBlock Text="Logout"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+                </Border>
+            </Grid>
+
+        <!-- Footer -->
+        <Border Grid.Row="2"
+                Background="#1A252F"
+                Padding="20"
+                Margin="0,20,0,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0"
+                           Text="© 2024 Cafe Management System"
+                           FontSize="12"
+                           Foreground="#95A5A6"
+                           VerticalAlignment="Center"/>
+
+                <TextBlock Grid.Column="1"
+                           Text="Cafe Management System"
+                           FontSize="12"
+                           Foreground="#95A5A6"
+                           VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

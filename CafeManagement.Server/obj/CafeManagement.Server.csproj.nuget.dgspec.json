@@ -77,6 +77,10 @@
             "Microsoft.Extensions.DependencyInjection.Abstractions": {
               "target": "Package",
               "version": "[10.0.0, )"
+            },
+            "Microsoft.Extensions.Logging.Abstractions": {
+              "target": "Package",
+              "version": "[10.0.0, )"
             }
           },
           "imports": [
@@ -415,6 +419,10 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "dependencies": {
+            "Microsoft.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[10.0.0, )"
+            },
             "Microsoft.Extensions.Logging.Abstractions": {
               "target": "Package",
               "version": "[10.0.0, )"
@@ -1110,6 +1118,9 @@
             "projectReferences": {
               "C:\\Users\\sokar\\Cafe-Management\\CafeManagement.Application\\CafeManagement.Application.csproj": {
                 "projectPath": "C:\\Users\\sokar\\Cafe-Management\\CafeManagement.Application\\CafeManagement.Application.csproj"
+              },
+              "C:\\Users\\sokar\\Cafe-Management\\CafeManagement.Core\\CafeManagement.Core.csproj": {
+                "projectPath": "C:\\Users\\sokar\\Cafe-Management\\CafeManagement.Core\\CafeManagement.Core.csproj"
               },
               "C:\\Users\\sokar\\Cafe-Management\\CafeManagement.Infrastructure\\CafeManagement.Infrastructure.csproj": {
                 "projectPath": "C:\\Users\\sokar\\Cafe-Management\\CafeManagement.Infrastructure\\CafeManagement.Infrastructure.csproj"

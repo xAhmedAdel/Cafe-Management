@@ -8,7 +8,10 @@ public interface ICafeManagementService
     Task<bool> RequestUnlockAsync();
     Task AdminUnlockAsync();
     Task<SessionDto?> GetCurrentSessionAsync();
+    Task<SessionDto?> GetActiveSessionAsync(int clientId);
     Task NotifyHeartbeatAsync();
+    Task<ClientDto?> GetCurrentClientAsync();
+    Task<SessionDto?> EndSessionAsync(int sessionId);
 }
 
 public interface ISignalRService
@@ -36,13 +39,6 @@ public interface ISystemService
     Task UnlockWorkstation();
 }
 
-public interface IScreenCaptureService
-{
-    Task<byte[]> CaptureScreenAsync();
-    Task<byte[]> CaptureScreenAsync(int x, int y, int width, int height);
-    Task<byte[]> CaptureWindowAsync(IntPtr windowHandle);
-    byte[] CompressImage(byte[] imageData, int quality = 75);
-}
 
 public interface IRemoteControlService
 {

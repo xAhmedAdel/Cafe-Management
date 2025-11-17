@@ -21,6 +21,11 @@ public class ClientService : IClientService
             existingClient.IPAddress = ipAddress;
             existingClient.Name = name;
             existingClient.UpdatedAt = DateTime.UtcNow;
+            // Ensure CurrentSessionId is never 0 - set to null instead
+            if (existingClient.CurrentSessionId == 0)
+            {
+                existingClient.CurrentSessionId = null;
+            }
             await _unitOfWork.Clients.UpdateAsync(existingClient);
 
             var reconnectionLog = new UsageLog
@@ -80,6 +85,12 @@ public class ClientService : IClientService
         client.Status = status;
         client.LastSeen = DateTime.UtcNow;
         client.UpdatedAt = DateTime.UtcNow;
+
+        // Ensure CurrentSessionId is never 0 - set to null instead
+        if (client.CurrentSessionId == 0)
+        {
+            client.CurrentSessionId = null;
+        }
 
         await _unitOfWork.Clients.UpdateAsync(client);
 

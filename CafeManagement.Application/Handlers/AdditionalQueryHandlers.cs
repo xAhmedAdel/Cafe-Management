@@ -46,6 +46,29 @@ public class GetSessionsByClientQueryHandler : IRequestHandler<GetSessionsByClie
     }
 }
 
+public class GetActiveSessionByClientQueryHandler : IRequestHandler<GetActiveSessionByClientQuery, SessionDto?>
+{
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IMapper _mapper;
+
+    public GetActiveSessionByClientQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
+    {
+        _unitOfWork = unitOfWork;
+        _mapper = mapper;
+    }
+
+    public async Task<SessionDto?> Handle(GetActiveSessionByClientQuery request, CancellationToken cancellationToken)
+    {
+        var sessions = await _unitOfWork.Sessions.FindAsync(s =>
+            s.ClientId == request.ClientId &&
+            s.Status == Core.Enums.SessionStatus.Active);
+
+        var session = sessions.FirstOrDefault();
+
+        return session != null ? _mapper.Map<SessionDto>(session) : null;
+    }
+}
+
 public class GetSessionsByUserQueryHandler : IRequestHandler<GetSessionsByUserQuery, IEnumerable<SessionDto>>
 {
     private readonly IUnitOfWork _unitOfWork;
@@ -112,8 +135,8 @@ public class GetSessionSummaryQueryHandler : IRequestHandler<GetSessionSummaryQu
             TotalSessions = allSessions.Count(),
             ActiveSessions = activeSessions.Count(),
             TotalRevenue = totalRevenue,
-            AverageSessionDuration = Math.Round((decimal)averageDuration, 2),
-            ClientStatusCounts = clientStatusCounts
+            AverageSessionDuration = (double)Math.Round((decimal)averageDuration, 2),
+            ClientStatusCounts = clientStatusCounts.ToDictionary(kvp => kvp.Key.ToString(), kvp => kvp.Value)
         };
     }
 }

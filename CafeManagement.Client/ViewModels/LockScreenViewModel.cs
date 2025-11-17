@@ -13,6 +13,7 @@ public partial class LockScreenViewModel : ObservableObject
     private readonly ICafeManagementService _cafeService;
     private readonly ISystemService _systemService;
     private readonly ISignalRService _signalRService;
+    private readonly IUserSessionService _userSessionService;
 
     [ObservableProperty]
     private string _clientName = "Client Computer";
@@ -47,16 +48,28 @@ public partial class LockScreenViewModel : ObservableObject
     [ObservableProperty]
     private bool _canExit = false;
 
-    private DateTime _sessionEndTime;
-    private Timer? _countdownTimer;
+    [ObservableProperty]
+    private string _password = "";
 
-    public LockScreenViewModel(ICafeManagementService cafeService, ISystemService systemService, ISignalRService signalRService)
+    [ObservableProperty]
+    private string _connectionStatus = "Initializing...";
+
+    [ObservableProperty]
+    private bool _isConnected = false;
+
+    private DateTime _sessionEndTime;
+    private System.Threading.Timer? _countdownTimer;
+
+    public LockScreenViewModel(ICafeManagementService cafeService, ISystemService systemService, ISignalRService signalRService, IUserSessionService userSessionService)
     {
         _cafeService = cafeService ?? throw new ArgumentNullException(nameof(cafeService));
         _systemService = systemService ?? throw new ArgumentNullException(nameof(systemService));
         _signalRService = signalRService ?? throw new ArgumentNullException(nameof(signalRService));
+        _userSessionService = userSessionService ?? throw new ArgumentNullException(nameof(userSessionService));
 
         UpdateClientInfo();
+        SetupSignalREventHandlers();
+        SetupUserSessionHandlers();
     }
 
     [RelayCommand]
@@ -88,18 +101,35 @@ public partial class LockScreenViewModel : ObservableObject
             // Connect to SignalR
             await _signalRService.ConnectAsync();
 
-            // Get current session info
-            var currentSession = await _cafeService.GetCurrentSessionAsync();
-            if (currentSession != null)
+            // Get current session info from UserSessionService
+            if (_userSessionService.CurrentSession != null)
             {
-                _sessionEndTime = currentSession.EndTime ?? DateTime.UtcNow.AddMinutes(currentSession.DurationMinutes);
-                _sessionStartTime = currentSession.StartTime.ToString("yyyy-MM-dd HH:mm:ss");
-                _hourlyRate = currentSession.HourlyRate;
+                var userSession = _userSessionService.CurrentSession;
+                _sessionEndTime = userSession.EndTime ?? DateTime.UtcNow.AddMinutes(userSession.DurationMinutes);
+                _sessionStartTime = userSession.StartTime.ToString("yyyy-MM-dd HH:mm:ss");
+                _hourlyRate = userSession.HourlyRate;
                 _hasSessionInfo = true;
 
                 if (_sessionEndTime > DateTime.UtcNow)
                 {
                     StartCountdown();
+                }
+            }
+            else
+            {
+                // Fallback to cafe service session
+                var currentSession = await _cafeService.GetCurrentSessionAsync();
+                if (currentSession != null)
+                {
+                    _sessionEndTime = currentSession.EndTime ?? DateTime.UtcNow.AddMinutes(currentSession.DurationMinutes);
+                    _sessionStartTime = currentSession.StartTime.ToString("yyyy-MM-dd HH:mm:ss");
+                    _hourlyRate = currentSession.HourlyRate;
+                    _hasSessionInfo = true;
+
+                    if (_sessionEndTime > DateTime.UtcNow)
+                    {
+                        StartCountdown();
+                    }
                 }
             }
 
@@ -143,7 +173,7 @@ public partial class LockScreenViewModel : ObservableObject
     private void StartCountdown()
     {
         StopCountdown();
-        _countdownTimer = new Timer(state => UpdateTimeRemaining(), null, 0, 1000);
+        _countdownTimer = new System.Threading.Timer(state => _ = UpdateTimeRemaining(), null, 0, 1000);
     }
 
     private void StopCountdown()
@@ -203,5 +233,87 @@ public partial class LockScreenViewModel : ObservableObject
         {
             SetTimeWarning(value);
         }
+    }
+
+    private void SetupSignalREventHandlers()
+    {
+        if (_signalRService is SignalRService signalRService)
+        {
+            signalRService.ConnectionStatusChanged += (sender, args) =>
+            {
+                ConnectionStatus = args.Status;
+                IsConnected = args.IsConnected;
+            };
+        }
+    }
+
+    private void SetupUserSessionHandlers()
+    {
+        // Handle user session events
+        _userSessionService.UserLoggedIn += (sender, args) =>
+        {
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                StatusMessage = $"User logged in: {args.User?.Username}";
+                if (args.Session != null)
+                {
+                    _sessionStartTime = args.Session.StartTime.ToString("yyyy-MM-dd HH:mm:ss");
+                    _hourlyRate = args.Session.HourlyRate;
+                    _hasSessionInfo = true;
+                    StartCountdown();
+                }
+            });
+        };
+
+        _userSessionService.UserLoggedOut += (sender, args) =>
+        {
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                StatusMessage = "User logged out";
+                _hasSessionInfo = false;
+                StopCountdown();
+            });
+        };
+
+        _userSessionService.TimeWarning += (sender, args) =>
+        {
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                SetTimeWarning(args.MinutesRemaining);
+                StatusMessage = args.Message;
+            });
+        };
+
+        _userSessionService.SessionExpired += (sender, args) =>
+        {
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                StatusMessage = "Session expired - Computer locked";
+                _hasSessionInfo = false;
+                StopCountdown();
+            });
+        };
+
+        _userSessionService.SessionStatusChanged += (sender, message) =>
+        {
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                StatusMessage = message;
+            });
+        };
+    }
+
+    public void ClearSessionDisplay()
+    {
+        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+        {
+            HasSessionInfo = false;
+            SessionStartTime = "";
+            HourlyRate = 0.00m;
+            TimeRemainingMinutes = 0;
+            TimeRemainingFormatted = "00:00:00";
+            StatusMessage = "Ready for login";
+            StopCountdown();
+        });
     }
 }

@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Information - Cafe Management</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .system-info-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .info-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .info-card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-card-content {
+            padding: 20px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #555;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-value {
+            color: #333;
+            font-family: 'Courier New', monospace;
+            background: #f8f9fa;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .client-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #007bff;
+        }
+
+        .client-info h3 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-online {
+            background-color: #28a745;
+        }
+
+        .status-offline {
+            background-color: #dc3545;
+        }
+
+        .refresh-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .refresh-btn:hover {
+            background: #0056b3;
+        }
+
+        .refresh-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .loading-spinner {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #007bff;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #f5c6cb;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #c3e6cb;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .auto-refresh {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .auto-refresh label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .auto-refresh input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+        }
+
+        .auto-refresh select {
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .system-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .metric-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #28a745;
+            transition: width 0.3s ease;
+        }
+
+        .progress-fill.warning {
+            background: #ffc107;
+        }
+
+        .progress-fill.danger {
+            background: #dc3545;
+        }
+
+        .last-updated {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <header>
+            <div class="header-content">
+                <h1>📊 System Information</h1>
+                <div class="header-actions">
+                    <button id="refreshBtn" onclick="refreshSystemInfo()" class="refresh-btn">
+                        <span>🔄</span>
+                        <span>Refresh</span>
+                    </button>
+                    <button onclick="goBack()" class="btn btn-secondary">← Back to Dashboard</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="system-info-container">
+            <div id="error-message" class="error-message" style="display: none;">
+                <span>⚠️</span>
+                <span id="error-text"></span>
+            </div>
+
+            <div id="success-message" class="success-message" style="display: none;">
+                <span>✅</span>
+                <span id="success-text"></span>
+            </div>
+
+            <div class="client-info">
+                <h3>Client Information</h3>
+                <div id="client-details">
+                    <p><strong>Loading client information...</strong></p>
+                </div>
+            </div>
+
+            <!-- System Metrics Overview -->
+            <div class="system-metrics" id="system-metrics" style="display: none;">
+                <div class="metric-card">
+                    <div class="metric-value" id="cpu-usage-metric">-</div>
+                    <div class="metric-label">CPU Usage</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="cpu-progress"></div>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="memory-usage-metric">-</div>
+                    <div class="metric-label">Memory Usage</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="memory-progress"></div>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="disk-usage-metric">-</div>
+                    <div class="metric-label">Disk Usage</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="disk-progress"></div>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="uptime-metric">-</div>
+                    <div class="metric-label">Uptime</div>
+                </div>
+            </div>
+
+            <!-- System Information Grid -->
+            <div class="info-grid" id="system-info-grid" style="display: none;">
+                <!-- Hardware Information -->
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <span>💻</span>
+                        <span>Hardware Information</span>
+                    </div>
+                    <div class="info-card-content" id="hardware-info">
+                        <div class="loading-spinner"></div>
+                        <p>Loading hardware information...</p>
+                    </div>
+                </div>
+
+                <!-- Operating System -->
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <span>🖥️</span>
+                        <span>Operating System</span>
+                    </div>
+                    <div class="info-card-content" id="os-info">
+                        <div class="loading-spinner"></div>
+                        <p>Loading OS information...</p>
+                    </div>
+                </div>
+
+                <!-- Memory Information -->
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <span>🧠</span>
+                        <span>Memory Information</span>
+                    </div>
+                    <div class="info-card-content" id="memory-info">
+                        <div class="loading-spinner"></div>
+                        <p>Loading memory information...</p>
+                    </div>
+                </div>
+
+                <!-- Disk Information -->
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <span>💾</span>
+                        <span>Disk Information</span>
+                    </div>
+                    <div class="info-card-content" id="disk-info">
+                        <div class="loading-spinner"></div>
+                        <p>Loading disk information...</p>
+                    </div>
+                </div>
+
+                <!-- Network Information -->
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <span>🌐</span>
+                        <span>Network Information</span>
+                    </div>
+                    <div class="info-card-content" id="network-info">
+                        <div class="loading-spinner"></div>
+                        <p>Loading network information...</p>
+                    </div>
+                </div>
+
+                <!-- Process Information -->
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <span>⚙️</span>
+                        <span>Process Information</span>
+                    </div>
+                    <div class="info-card-content" id="process-info">
+                        <div class="loading-spinner"></div>
+                        <p>Loading process information...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Auto Refresh Controls -->
+            <div class="auto-refresh">
+                <label>
+                    <input type="checkbox" id="autoRefresh" onchange="toggleAutoRefresh()">
+                    Auto-refresh
+                </label>
+                <select id="refreshInterval" onchange="updateRefreshInterval()">
+                    <option value="10000">10 seconds</option>
+                    <option value="30000" selected>30 seconds</option>
+                    <option value="60000">1 minute</option>
+                    <option value="300000">5 minutes</option>
+                </select>
+            </div>
+
+            <div class="last-updated" id="last-updated">
+                Last updated: Never
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let clientId = null;
+        let autoRefreshInterval = null;
+        let currentRefreshRate = 30000;
+        let isLoading = false;
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            clientId = urlParams.get('clientId');
+
+            if (!clientId) {
+                showError('No client ID specified');
+                return;
+            }
+
+            loadClientInfo();
+            refreshSystemInfo();
+        });
+
+        async function loadClientInfo() {
+            try {
+                const response = await fetch(`/api/admin/clients/${clientId}`);
+                if (response.ok) {
+                    const client = await response.json();
+                    document.getElementById('client-details').innerHTML = `
+                        <p><strong>Client ID:</strong> ${client.id}</p>
+                        <p><strong>Name:</strong> ${client.name}</p>
+                        <p><strong>IP Address:</strong> ${client.ipAddress || 'N/A'}</p>
+                        <p><strong>Status:</strong>
+                            <span class="status-indicator ${client.isOnline ? 'status-online' : 'status-offline'}"></span>
+                            ${client.isOnline ? 'Online' : 'Offline'}
+                        </p>
+                        <p><strong>Last Seen:</strong> ${client.lastSeen || 'Never'}</p>
+                    `;
+                } else {
+                    throw new Error('Failed to load client information');
+                }
+            } catch (error) {
+                document.getElementById('client-details').innerHTML = `
+                    <p style="color: #dc3545;">Failed to load client information</p>
+                `;
+            }
+        }
+
+        async function refreshSystemInfo() {
+            if (isLoading) return;
+
+            try {
+                isLoading = true;
+                setRefreshButtonLoading(true);
+                hideMessages();
+
+                const response = await fetch(`/api/admin/clients/${clientId}/system-info`);
+
+                if (response.ok) {
+                    const systemInfo = await response.json();
+                    displaySystemInfo(systemInfo);
+                    showSuccess('System information updated successfully');
+                    updateLastUpdated();
+                } else {
+                    throw new Error('Failed to fetch system information');
+                }
+            } catch (error) {
+                showError('Failed to refresh system information: ' + error.message);
+            } finally {
+                isLoading = false;
+                setRefreshButtonLoading(false);
+            }
+        }
+
+        function displaySystemInfo(systemInfo) {
+            // Show the info grid and metrics
+            document.getElementById('system-info-grid').style.display = 'grid';
+            document.getElementById('system-metrics').style.display = 'grid';
+
+            // Update metrics
+            updateMetrics(systemInfo);
+
+            // Hardware Information
+            document.getElementById('hardware-info').innerHTML = systemInfo.hardware ? `
+                <div class="info-item">
+                    <span class="info-label">💻 Computer Name</span>
+                    <span class="info-value">${systemInfo.hardware.computerName || 'N/A'}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">🏭 Manufacturer</span>
+                    <span class="info-value">${systemInfo.hardware.manufacturer || 'N/A'}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">📱 Model</span>
+                    <span class="info-value">${systemInfo.hardware.model || 'N/A'}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">🔧 Processor</span>
+                    <span class="info-value">${systemInfo.hardware.processor || 'N/A'}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">🔌 BIOS Version</span>
+                    <span class="info-value">${systemInfo.hardware.biosVersion || 'N/A'}</span>
+                </div>
+            ` : '<p>No hardware information available</p>';
+
+            // Operating System
+            document.getElementById('os-info').innerHTML = systemInfo.operatingSystem ? `
+                <div class="info-item">
+                    <span class="info-label">🪟 OS Name</span>
+                    <span class="info-value">${systemInfo.operatingSystem.name || 'N/A'}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">📋 Version</span>
+                    <span class="info-value">${systemInfo.operatingSystem.version || 'N/A'}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">🏗️ Architecture</span>
+                    <span class="info-value">${systemInfo.operatingSystem.architecture || 'N/A'}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">📅 Install Date</span>
+                    <span class="info-value">${systemInfo.operatingSystem.installDate || 'N/A'}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">⏰ Uptime</span>
+                    <span class="info-value">${systemInfo.operatingSystem.uptime || 'N/A'}</span>
+                </div>
+            ` : '<p>No OS information available</p>';
+
+            // Memory Information
+            document.getElementById('memory-info').innerHTML = systemInfo.memory ? `
+                <div class="info-item">
+                    <span class="info-label">🧠 Total Memory</span>
+                    <span class="info-value">${formatBytes(systemInfo.memory.total)}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">✅ Available Memory</span>
+                    <span class="info-value">${formatBytes(systemInfo.memory.available)}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">📊 Used Memory</span>
+                    <span class="info-value">${formatBytes(systemInfo.memory.used)}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">📈 Usage Percentage</span>
+                    <span class="info-value">${systemInfo.memory.percentageUsed}%</span>
+                </div>
+            ` : '<p>No memory information available</p>';
+
+            // Disk Information
+            const diskHtml = systemInfo.diskDrives && systemInfo.diskDrives.length > 0 ?
+                systemInfo.diskDrives.map(disk => `
+                    <div class="info-item">
+                        <span class="info-label">💾 ${disk.name} (${disk.driveType})</span>
+                        <span class="info-value">${formatBytes(disk.totalSize)}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">✅ Free Space</span>
+                        <span class="info-value">${formatBytes(disk.freeSpace)} (${disk.percentageUsed}% used)</span>
+                    </div>
+                `).join('') : '<p>No disk information available</p>';
+
+            document.getElementById('disk-info').innerHTML = diskHtml;
+
+            // Network Information
+            const networkHtml = systemInfo.networkAdapters && systemInfo.networkAdapters.length > 0 ?
+                systemInfo.networkAdapters.map(adapter => `
+                    <div class="info-item">
+                        <span class="info-label">🌐 ${adapter.name}</span>
+                        <span class="info-value">${adapter.status}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">📡 IP Address</span>
+                        <span class="info-value">${adapter.ipAddress || 'N/A'}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">🔗 MAC Address</span>
+                        <span class="info-value">${adapter.macAddress || 'N/A'}</span>
+                    </div>
+                `).join('') : '<p>No network information available</p>';
+
+            document.getElementById('network-info').innerHTML = networkHtml;
+
+            // Process Information
+            document.getElementById('process-info').innerHTML = systemInfo.processes ? `
+                <div class="info-item">
+                    <span class="info-label">⚙️ Total Processes</span>
+                    <span class="info-value">${systemInfo.processes.total || 'N/A'}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">🏃 Running</span>
+                    <span class="info-value">${systemInfo.processes.running || 'N/A'}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">💤 Sleeping</span>
+                    <span class="info-value">${systemInfo.processes.sleeping || 'N/A'}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">⏸️ Stopped</span>
+                    <span class="info-value">${systemInfo.processes.stopped || 'N/A'}</span>
+                </div>
+            ` : '<p>No process information available</p>';
+        }
+
+        function updateMetrics(systemInfo) {
+            // CPU Usage
+            const cpuUsage = systemInfo.processor?.usagePercentage || 0;
+            document.getElementById('cpu-usage-metric').textContent = `${cpuUsage}%`;
+            updateProgressBar('cpu-progress', cpuUsage);
+
+            // Memory Usage
+            const memoryUsage = systemInfo.memory?.percentageUsed || 0;
+            document.getElementById('memory-usage-metric').textContent = `${memoryUsage}%`;
+            updateProgressBar('memory-progress', memoryUsage);
+
+            // Disk Usage (use the first drive's usage)
+            const diskUsage = systemInfo.diskDrives && systemInfo.diskDrives.length > 0
+                ? systemInfo.diskDrives[0].percentageUsed
+                : 0;
+            document.getElementById('disk-usage-metric').textContent = `${diskUsage}%`;
+            updateProgressBar('disk-progress', diskUsage);
+
+            // Uptime
+            const uptime = systemInfo.operatingSystem?.uptime || 'N/A';
+            document.getElementById('uptime-metric').textContent = uptime;
+        }
+
+        function updateProgressBar(progressId, percentage) {
+            const progressBar = document.getElementById(progressId);
+            progressBar.style.width = `${percentage}%`;
+
+            // Change color based on usage
+            progressBar.classList.remove('warning', 'danger');
+            if (percentage >= 80) {
+                progressBar.classList.add('danger');
+            } else if (percentage >= 60) {
+                progressBar.classList.add('warning');
+            }
+        }
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function setRefreshButtonLoading(loading) {
+            const btn = document.getElementById('refreshBtn');
+            const btnText = btn.querySelector('span:last-child');
+            const spinner = btn.querySelector('.loading-spinner');
+
+            if (loading) {
+                btn.disabled = true;
+                btnText.textContent = 'Loading...';
+                if (!spinner) {
+                    btn.querySelector('span:first-child').innerHTML = '<div class="loading-spinner"></div>';
+                }
+            } else {
+                btn.disabled = false;
+                btnText.textContent = 'Refresh';
+                btn.querySelector('span:first-child').innerHTML = '🔄';
+            }
+        }
+
+        function toggleAutoRefresh() {
+            const checkbox = document.getElementById('autoRefresh');
+
+            if (checkbox.checked) {
+                startAutoRefresh();
+            } else {
+                stopAutoRefresh();
+            }
+        }
+
+        function startAutoRefresh() {
+            if (autoRefreshInterval) return;
+
+            autoRefreshInterval = setInterval(refreshSystemInfo, currentRefreshRate);
+        }
+
+        function stopAutoRefresh() {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+                autoRefreshInterval = null;
+            }
+        }
+
+        function updateRefreshInterval() {
+            const select = document.getElementById('refreshInterval');
+            currentRefreshRate = parseInt(select.value);
+
+            if (document.getElementById('autoRefresh').checked) {
+                stopAutoRefresh();
+                startAutoRefresh();
+            }
+        }
+
+        function updateLastUpdated() {
+            const now = new Date();
+            document.getElementById('last-updated').textContent =
+                `Last updated: ${now.toLocaleString()}`;
+        }
+
+        function showError(message) {
+            const errorElement = document.getElementById('error-message');
+            const errorText = document.getElementById('error-text');
+            errorText.textContent = message;
+            errorElement.style.display = 'flex';
+            document.getElementById('success-message').style.display = 'none';
+        }
+
+        function showSuccess(message) {
+            const successElement = document.getElementById('success-message');
+            const successText = document.getElementById('success-text');
+            successText.textContent = message;
+            successElement.style.display = 'flex';
+            document.getElementById('error-message').style.display = 'none';
+        }
+
+        function hideMessages() {
+            document.getElementById('error-message').style.display = 'none';
+            document.getElementById('success-message').style.display = 'none';
+        }
+
+        function goBack() {
+            window.location.href = '/admin/';
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            stopAutoRefresh();
+        });
+    </script>
+</body>
+</html>

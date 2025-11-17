@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Screen - Cafe Management</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .screen-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .screen-viewer {
+            background: #000;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            min-height: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .screen-viewer canvas {
+            max-width: 100%;
+            max-height: 700px;
+            border-radius: 4px;
+            cursor: crosshair;
+        }
+
+        .control-panel {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .control-panel h3 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .client-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-connected {
+            background-color: #28a745;
+        }
+
+        .status-disconnected {
+            background-color: #dc3545;
+        }
+
+        .status-connecting {
+            background-color: #ffc107;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+
+        .refresh-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .refresh-interval {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .refresh-interval select {
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .screenshot-info {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        .fullscreen-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .fullscreen-btn:hover {
+            background: #5a6268;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #f5c6cb;
+            margin-bottom: 20px;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #c3e6cb;
+            margin-bottom: 20px;
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 2s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Fullscreen styles */
+        .fullscreen-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .fullscreen-container.active {
+            display: flex;
+        }
+
+        .fullscreen-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            background: rgba(0,0,0,0.7);
+            padding: 10px;
+            border-radius: 6px;
+        }
+
+        .fullscreen-controls button {
+            background: #fff;
+            color: #000;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <header>
+            <div class="header-content">
+                <h1>📸 View Screen</h1>
+                <div class="header-actions">
+                    <button onclick="goBack()" class="btn btn-secondary">← Back to Dashboard</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="screen-container">
+            <div id="error-message" class="error-message" style="display: none;"></div>
+            <div id="success-message" class="success-message" style="display: none;"></div>
+
+            <div class="client-info">
+                <h3>Client Information</h3>
+                <div id="client-details">
+                    <p><strong>Loading client information...</strong></p>
+                </div>
+            </div>
+
+            <div class="control-panel">
+                <h3>🖥️ Screen Capture Controls</h3>
+                <div class="button-group">
+                    <button id="startCaptureBtn" onclick="startScreenCapture()" class="btn btn-primary">Start Live View</button>
+                    <button id="stopCaptureBtn" onclick="stopScreenCapture()" class="btn btn-danger" style="display: none;">Stop Live View</button>
+                    <button onclick="takeScreenshot()" class="btn btn-info">📸 Take Screenshot</button>
+                    <button onclick="toggleFullscreen()" class="fullscreen-btn">⛶ Fullscreen</button>
+
+                    <div class="refresh-controls">
+                        <div class="refresh-interval">
+                            <label for="refreshInterval">Refresh Rate:</label>
+                            <select id="refreshInterval" onchange="updateRefreshInterval()">
+                                <option value="1000">1 second</option>
+                                <option value="2000" selected>2 seconds</option>
+                                <option value="3000">3 seconds</option>
+                                <option value="5000">5 seconds</option>
+                                <option value="10000">10 seconds</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <p style="margin-top: 10px; font-size: 14px; color: #666;">
+                    Status: <span id="connection-status">
+                        <span class="status-indicator status-disconnected"></span>
+                        Disconnected
+                    </span>
+                </p>
+
+                <div class="screenshot-info" id="screenshot-info" style="display: none;">
+                    <strong>Last Screenshot:</strong> <span id="screenshot-time">Never</span> |
+                    <strong>Resolution:</strong> <span id="screenshot-resolution">N/A</span> |
+                    <strong>Size:</strong> <span id="screenshot-size">N/A</span>
+                </div>
+            </div>
+
+            <div class="screen-viewer" id="screenViewer">
+                <div id="screenPlaceholder">
+                    Click "Start Live View" to begin viewing the client screen
+                </div>
+                <canvas id="screenCanvas" style="display: none;"></canvas>
+                <div class="loading-spinner" id="loadingSpinner" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fullscreen container -->
+    <div class="fullscreen-container" id="fullscreenContainer">
+        <div class="fullscreen-controls">
+            <button onclick="exitFullscreen()">✕ Exit Fullscreen</button>
+            <button onclick="takeScreenshot()">📸 Screenshot</button>
+        </div>
+        <canvas id="fullscreenCanvas"></canvas>
+    </div>
+
+    <script>
+        let clientId = null;
+        let isCapturing = false;
+        let screenRefreshInterval = null;
+        let currentRefreshRate = 2000;
+        let lastScreenshotTime = null;
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            clientId = urlParams.get('clientId');
+
+            if (!clientId) {
+                showError('No client ID specified');
+                return;
+            }
+
+            loadClientInfo();
+
+            // Handle fullscreen exit with ESC key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && document.getElementById('fullscreenContainer').classList.contains('active')) {
+                    exitFullscreen();
+                }
+            });
+        });
+
+        async function loadClientInfo() {
+            try {
+                const response = await fetch(`/api/admin/clients/${clientId}`);
+                if (response.ok) {
+                    const client = await response.json();
+                    document.getElementById('client-details').innerHTML = `
+                        <p><strong>Client ID:</strong> ${client.id}</p>
+                        <p><strong>Name:</strong> ${client.name}</p>
+                        <p><strong>IP Address:</strong> ${client.ipAddress || 'N/A'}</p>
+                        <p><strong>Status:</strong>
+                            <span class="status-indicator ${client.isOnline ? 'status-connected' : 'status-disconnected'}"></span>
+                            ${client.isOnline ? 'Online' : 'Offline'}
+                        </p>
+                        <p><strong>Last Seen:</strong> ${client.lastSeen || 'Never'}</p>
+                    `;
+                } else {
+                    throw new Error('Failed to load client information');
+                }
+            } catch (error) {
+                document.getElementById('client-details').innerHTML = `
+                    <p style="color: #dc3545;">Failed to load client information</p>
+                `;
+            }
+        }
+
+        async function startScreenCapture() {
+            try {
+                updateConnectionStatus('connecting');
+                showSuccess('Starting screen capture...');
+
+                const response = await fetch(`/api/admin/clients/${clientId}/screenshot`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    isCapturing = true;
+                    updateConnectionStatus('connected');
+                    showSuccess('Screen capture started successfully!');
+
+                    // Update UI
+                    document.getElementById('startCaptureBtn').style.display = 'none';
+                    document.getElementById('stopCaptureBtn').style.display = 'inline-block';
+
+                    // Start screen refresh
+                    startScreenRefresh();
+                } else {
+                    throw new Error('Failed to start screen capture');
+                }
+            } catch (error) {
+                updateConnectionStatus('disconnected');
+                showError('Failed to start screen capture: ' + error.message);
+            }
+        }
+
+        async function stopScreenCapture() {
+            try {
+                isCapturing = false;
+                updateConnectionStatus('disconnected');
+                showSuccess('Screen capture stopped');
+
+                // Update UI
+                document.getElementById('startCaptureBtn').style.display = 'inline-block';
+                document.getElementById('stopCaptureBtn').style.display = 'none';
+
+                // Stop screen refresh
+                stopScreenRefresh();
+
+                // Hide canvas and show placeholder
+                document.getElementById('screenCanvas').style.display = 'none';
+                document.getElementById('screenPlaceholder').style.display = 'block';
+            } catch (error) {
+                showError('Failed to stop screen capture: ' + error.message);
+            }
+        }
+
+        async function takeScreenshot() {
+            try {
+                showSuccess('Taking screenshot...');
+                showLoading(true);
+
+                const response = await fetch(`/api/admin/clients/${clientId}/screenshot`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const imageData = await response.blob();
+                    displayScreenshot(imageData);
+                    updateScreenshotInfo(imageData);
+                    showSuccess('Screenshot captured successfully!');
+                } else {
+                    throw new Error('Failed to capture screenshot');
+                }
+            } catch (error) {
+                showError('Failed to capture screenshot: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function refreshScreen() {
+            if (!isCapturing) return;
+
+            try {
+                const response = await fetch(`/api/admin/clients/${clientId}/screenshot`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const imageData = await response.blob();
+                    displayScreenshot(imageData);
+                    updateScreenshotInfo(imageData);
+                }
+            } catch (error) {
+                console.error('Failed to refresh screen:', error);
+            }
+        }
+
+        function displayScreenshot(imageBlob) {
+            const canvas = document.getElementById('screenCanvas');
+            const fullscreenCanvas = document.getElementById('fullscreenCanvas');
+            const ctx = canvas.getContext('2d');
+            const fullscreenCtx = fullscreenCanvas.getContext('2d');
+            const img = new Image();
+
+            img.onload = function() {
+                // Regular canvas
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
+
+                // Fullscreen canvas
+                fullscreenCanvas.width = img.width;
+                fullscreenCanvas.height = img.height;
+                fullscreenCtx.drawImage(img, 0, 0);
+
+                // Show canvas, hide placeholder
+                canvas.style.display = 'block';
+                document.getElementById('screenPlaceholder').style.display = 'none';
+            };
+
+            img.src = URL.createObjectURL(imageBlob);
+        }
+
+        function updateScreenshotInfo(imageBlob) {
+            lastScreenshotTime = new Date();
+
+            const sizeInKB = (imageBlob.size / 1024).toFixed(2);
+            const canvas = document.getElementById('screenCanvas');
+
+            document.getElementById('screenshot-info').style.display = 'block';
+            document.getElementById('screenshot-time').textContent = lastScreenshotTime.toLocaleTimeString();
+            document.getElementById('screenshot-resolution').textContent = `${canvas.width}x${canvas.height}`;
+            document.getElementById('screenshot-size').textContent = `${sizeInKB} KB`;
+        }
+
+        function startScreenRefresh() {
+            screenRefreshInterval = setInterval(refreshScreen, currentRefreshRate);
+            refreshScreen(); // Initial refresh
+        }
+
+        function stopScreenRefresh() {
+            if (screenRefreshInterval) {
+                clearInterval(screenRefreshInterval);
+                screenRefreshInterval = null;
+            }
+        }
+
+        function updateRefreshInterval() {
+            const select = document.getElementById('refreshInterval');
+            currentRefreshRate = parseInt(select.value);
+
+            if (isCapturing) {
+                stopScreenRefresh();
+                startScreenRefresh();
+            }
+        }
+
+        function toggleFullscreen() {
+            const container = document.getElementById('fullscreenContainer');
+            const canvas = document.getElementById('screenCanvas');
+            const fullscreenCanvas = document.getElementById('fullscreenCanvas');
+
+            if (container.classList.contains('active')) {
+                exitFullscreen();
+            } else {
+                // Copy canvas content to fullscreen canvas
+                const ctx = fullscreenCanvas.getContext('2d');
+                ctx.drawImage(canvas, 0, 0);
+                container.classList.add('active');
+            }
+        }
+
+        function exitFullscreen() {
+            document.getElementById('fullscreenContainer').classList.remove('active');
+        }
+
+        function updateConnectionStatus(status) {
+            const statusElement = document.getElementById('connection-status');
+
+            let statusClass = 'status-disconnected';
+            let statusText = 'Disconnected';
+
+            switch (status) {
+                case 'connected':
+                    statusClass = 'status-connected';
+                    statusText = 'Connected';
+                    break;
+                case 'connecting':
+                    statusClass = 'status-connecting';
+                    statusText = 'Connecting';
+                    break;
+                case 'disconnected':
+                    statusClass = 'status-disconnected';
+                    statusText = 'Disconnected';
+                    break;
+            }
+
+            statusElement.innerHTML = `
+                <span class="status-indicator ${statusClass}"></span>
+                ${statusText}
+            `;
+        }
+
+        function showLoading(show) {
+            document.getElementById('loadingSpinner').style.display = show ? 'block' : 'none';
+        }
+
+        function showError(message) {
+            const errorElement = document.getElementById('error-message');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+
+            // Hide success message
+            document.getElementById('success-message').style.display = 'none';
+
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                errorElement.style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            const successElement = document.getElementById('success-message');
+            successElement.textContent = message;
+            successElement.style.display = 'block';
+
+            // Hide error message
+            document.getElementById('error-message').style.display = 'none';
+
+            // Auto-hide after 3 seconds
+            setTimeout(() => {
+                successElement.style.display = 'none';
+            }, 3000);
+        }
+
+        function goBack() {
+            if (isCapturing) {
+                stopScreenCapture();
+            }
+            window.location.href = '/admin/';
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            if (isCapturing) {
+                stopScreenCapture();
+            }
+        });
+    </script>
+</body>
+</html>

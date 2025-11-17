@@ -800,6 +800,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v10.0",
         "dependencies": {
+          "Microsoft.EntityFrameworkCore": "10.0.0",
           "Microsoft.Extensions.Logging.Abstractions": "10.0.0"
         },
         "compile": {
@@ -1883,7 +1884,8 @@
       "Microsoft.AspNetCore.Identity >= 2.3.1",
       "Microsoft.EntityFrameworkCore >= 10.0.0",
       "Microsoft.Extensions.Configuration.Abstractions >= 10.0.0",
-      "Microsoft.Extensions.DependencyInjection.Abstractions >= 10.0.0"
+      "Microsoft.Extensions.DependencyInjection.Abstractions >= 10.0.0",
+      "Microsoft.Extensions.Logging.Abstractions >= 10.0.0"
     ]
   },
   "packageFolders": {
@@ -1960,6 +1962,10 @@
             "version": "[10.0.0, )"
           },
           "Microsoft.Extensions.DependencyInjection.Abstractions": {
+            "target": "Package",
+            "version": "[10.0.0, )"
+          },
+          "Microsoft.Extensions.Logging.Abstractions": {
             "target": "Package",
             "version": "[10.0.0, )"
           }

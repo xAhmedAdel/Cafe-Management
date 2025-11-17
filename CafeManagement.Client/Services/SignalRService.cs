@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using CafeManagement.Client.Services.Interfaces;
 using CafeManagement.Application.DTOs;
 using System.Net.Http;
@@ -16,19 +17,25 @@ public class SignalRService : ISignalRService, IDisposable
     private readonly HttpClient _httpClient;
     private readonly IConfiguration _configuration;
     private readonly ILockScreenService _lockScreenService;
+    private readonly ConnectionRetryService _connectionRetryService;
+    private readonly IServiceProvider _serviceProvider;
     private bool _isConnected = false;
 
-    public SignalRService(ILogger<SignalRService> logger, IConfiguration configuration, ILockScreenService lockScreenService)
+    public event EventHandler<ConnectionStatusChangedEventArgs>? ConnectionStatusChanged;
+
+    public SignalRService(ILogger<SignalRService> logger, IConfiguration configuration, ILockScreenService lockScreenService, ConnectionRetryService connectionRetryService, IServiceProvider serviceProvider)
     {
         _logger = logger;
         _configuration = configuration;
         _lockScreenService = lockScreenService;
+        _connectionRetryService = connectionRetryService;
+        _serviceProvider = serviceProvider;
         _httpClient = new HttpClient();
 
         var serverUrl = _configuration["ServerSettings:BaseUrl"] ?? "http://localhost:5032";
         _hubConnection = new HubConnectionBuilder()
             .WithUrl($"{serverUrl}/hub/cafemanagement")
-            .WithAutomaticReconnect()
+            // Remove WithAutomaticReconnect to prevent conflicts with ConnectionRetryService
             .ConfigureLogging(logging =>
             {
                 logging.AddConsole();
@@ -37,29 +44,23 @@ public class SignalRService : ISignalRService, IDisposable
             .Build();
 
         SetupEventHandlers();
+        _connectionRetryService.SetConnectCallback(async () => await AttemptConnectAsync());
     }
 
     private void SetupEventHandlers()
     {
-        _hubConnection.Reconnected += async (connectionId) =>
-        {
-            _isConnected = true;
-            _logger.LogInformation($"SignalR reconnected with connection ID: {connectionId}");
-            await OnReconnected();
-        };
-
-        _hubConnection.Reconnecting += (exception) =>
-        {
-            _isConnected = false;
-            _logger.LogWarning($"SignalR reconnecting: {exception?.Message}");
-            return Task.CompletedTask;
-        };
-
+        // Only handle disconnections, let ConnectionRetryService handle reconnections
         _hubConnection.Closed += (exception) =>
         {
             _isConnected = false;
             _logger.LogWarning($"SignalR connection closed: {exception?.Message}");
+            _connectionRetryService.OnDisconnected("SignalR connection closed");
             return Task.CompletedTask;
+        };
+
+        _connectionRetryService.ConnectionStatusChanged += (sender, args) =>
+        {
+            OnConnectionStatusChanged(args);
         };
 
         // Handle incoming server commands
@@ -71,6 +72,7 @@ public class SignalRService : ISignalRService, IDisposable
         _hubConnection.On("LockWorkstation", LockWorkstation);
         _hubConnection.On("StartRemoteControl", StartRemoteControl);
         _hubConnection.On("StopRemoteControl", StopRemoteControl);
+        _hubConnection.On("CaptureScreenshot", CaptureScreenshot);
     }
 
     public async Task ConnectAsync()
@@ -84,6 +86,41 @@ public class SignalRService : ISignalRService, IDisposable
             }
 
             _logger.LogInformation("Connecting to SignalR hub...");
+            _connectionRetryService.StartRetrying();
+
+            await AttemptConnectAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error connecting to SignalR hub");
+            _isConnected = false;
+            _connectionRetryService.OnDisconnected(ex.Message);
+            throw;
+        }
+    }
+
+    private async Task AttemptConnectAsync()
+    {
+        // Check if connection is already in progress or established
+        if (_hubConnection.State == HubConnectionState.Connected ||
+            _hubConnection.State == HubConnectionState.Connecting ||
+            _hubConnection.State == HubConnectionState.Reconnecting)
+        {
+            _logger.LogInformation($"Connection attempt skipped - current state: {_hubConnection.State}");
+            return;
+        }
+
+        // Ensure we're in a disconnected state before trying to connect
+        if (_hubConnection.State != HubConnectionState.Disconnected)
+        {
+            _logger.LogWarning($"Connection attempt aborted - invalid state: {_hubConnection.State}");
+            return;
+        }
+
+        try
+        {
+            _logger.LogInformation($"Attempting SignalR connection. Current state: {_hubConnection.State}");
+
             await _hubConnection.StartAsync();
             _isConnected = true;
             _logger.LogInformation("SignalR connection established successfully");
@@ -94,12 +131,20 @@ public class SignalRService : ISignalRService, IDisposable
             {
                 await _hubConnection.InvokeAsync("RegisterClient", clientId);
                 _logger.LogInformation($"Client {clientId} registered with server");
+                _connectionRetryService.OnConnected();
+                OnConnectionStatusChanged(new ConnectionStatusChangedEventArgs
+                {
+                    Status = $"{Environment.MachineName} connected with Cafe-Management",
+                    IsConnected = true,
+                    RetryCount = 0,
+                    LastAttempt = DateTime.UtcNow
+                });
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error connecting to SignalR hub");
             _isConnected = false;
+            _logger.LogWarning(ex, $"SignalR connection failed: {ex.Message}");
             throw;
         }
     }
@@ -108,12 +153,20 @@ public class SignalRService : ISignalRService, IDisposable
     {
         try
         {
+            _connectionRetryService.StopRetrying();
             if (_hubConnection.State == HubConnectionState.Connected)
             {
                 await _hubConnection.StopAsync();
                 _logger.LogInformation("SignalR connection stopped");
             }
             _isConnected = false;
+            OnConnectionStatusChanged(new ConnectionStatusChangedEventArgs
+            {
+                Status = "Connection monitoring stopped",
+                IsConnected = false,
+                RetryCount = 0,
+                LastAttempt = DateTime.UtcNow
+            });
         }
         catch (Exception ex)
         {
@@ -143,7 +196,7 @@ public class SignalRService : ISignalRService, IDisposable
         {
             if (_isConnected)
             {
-                await _hubConnection.InvokeAsync("SessionStarted", session);
+                await _hubConnection.InvokeAsync("NotifySessionStarted", session);
                 _logger.LogInformation($"Session started notification sent: {session.Id}");
             }
         }
@@ -159,7 +212,7 @@ public class SignalRService : ISignalRService, IDisposable
         {
             if (_isConnected)
             {
-                await _hubConnection.InvokeAsync("SessionEnded", session);
+                await _hubConnection.InvokeAsync("NotifySessionEnded", session);
                 _logger.LogInformation($"Session ended notification sent: {session.Id}");
             }
         }
@@ -175,7 +228,7 @@ public class SignalRService : ISignalRService, IDisposable
         {
             if (_isConnected)
             {
-                await _hubConnection.InvokeAsync("ClientStatusUpdated", clientId, status);
+                await _hubConnection.InvokeAsync("NotifyClientStatusUpdate", clientId, status);
                 _logger.LogInformation($"Client status updated notification sent: Client {clientId}, Status {status}");
             }
         }
@@ -388,6 +441,35 @@ public class SignalRService : ISignalRService, IDisposable
         return Task.CompletedTask;
     }
 
+    private async Task CaptureScreenshot()
+    {
+        try
+        {
+            _logger.LogInformation("Screenshot capture command received from server");
+
+            // Use ScreenCaptureService to capture screenshot
+            var screenCaptureService = _serviceProvider.GetRequiredService<ScreenCaptureService>();
+            _logger.LogInformation("ScreenCaptureService retrieved from service provider");
+
+            var screenshotBytes = await screenCaptureService.CaptureFullDesktopAsync();
+            _logger.LogInformation($"Screenshot capture completed. Bytes captured: {screenshotBytes?.Length ?? 0}");
+
+            if (screenshotBytes != null && screenshotBytes.Length > 0)
+            {
+                await SendScreenshot(screenshotBytes);
+                _logger.LogInformation($"Screenshot captured and sent: {screenshotBytes.Length} bytes");
+            }
+            else
+            {
+                _logger.LogWarning("Screenshot capture failed or returned empty data");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error handling screenshot capture command");
+        }
+    }
+
     private async Task OnReconnected()
     {
         // Re-register client after reconnection
@@ -398,8 +480,14 @@ public class SignalRService : ISignalRService, IDisposable
         }
     }
 
+    protected virtual void OnConnectionStatusChanged(ConnectionStatusChangedEventArgs e)
+    {
+        ConnectionStatusChanged?.Invoke(this, e);
+    }
+
     public void Dispose()
     {
+        _connectionRetryService?.StopRetrying();
         _hubConnection?.DisposeAsync().AsTask().Wait();
         _httpClient?.Dispose();
     }

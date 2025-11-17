@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - Cafe Management System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.1);
+            margin-left: 10px;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .content {
+            padding: 24px;
+        }
+
+        .filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin: 4px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .system-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 24px;
+            border-radius: 8px;
+            text-align: center;
+            border-left: 4px solid #667eea;
+        }
+
+        .metric-card.primary {
+            border-left-color: #667eea;
+        }
+
+        .metric-card.success {
+            border-left-color: #28a745;
+        }
+
+        .metric-card.warning {
+            border-left-color: #ffc107;
+        }
+
+        .metric-card.danger {
+            border-left-color: #dc3545;
+        }
+
+        .metric-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .metric-label {
+            color: #6c757d;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .report-section {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        .report-header {
+            background: #f8f9fa;
+            padding: 16px 20px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .report-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .report-content {
+            padding: 20px;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+
+        .table th,
+        .table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .chart-container {
+            height: 300px;
+            margin: 20px 0;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+            }
+
+            .nav-link {
+                margin: 0 4px;
+            }
+
+            .filters {
+                grid-template-columns: 1fr;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                margin: 4px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Reports & Analytics</h1>
+            <div>
+                <a href="index.html" class="nav-link">← Dashboard</a>
+                <a href="user-management.html" class="nav-link">Users</a>
+            </div>
+        </div>
+
+        <div class="content">
+            <div id="error-message" class="error" style="display: none;"></div>
+
+            <!-- Date Range Filters -->
+            <div class="filters">
+                <div class="form-group">
+                    <label for="startDate">Start Date</label>
+                    <input type="date" id="startDate" value="">
+                </div>
+                <div class="form-group">
+                    <label for="endDate">End Date</label>
+                    <input type="date" id="endDate" value="">
+                </div>
+                <div class="form-group">
+                    <label for="reportType">Report Type</label>
+                    <select id="reportType">
+                        <option value="overview">System Overview</option>
+                        <option value="revenue">Revenue Analysis</option>
+                        <option value="users">User Usage</option>
+                        <option value="clients">Client Usage</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>&nbsp;</label>
+                    <button class="btn btn-primary" onclick="generateReport()">Generate Report</button>
+                </div>
+            </div>
+
+            <!-- System Overview -->
+            <div id="systemOverview" class="report-section">
+                <div class="report-header">
+                    <div class="report-title">System Overview</div>
+                    <button class="btn btn-secondary" onclick="refreshOverview()">Refresh</button>
+                </div>
+                <div class="report-content">
+                    <div class="system-overview" id="overviewMetrics">
+                        <div class="loading">Loading system overview...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Revenue Report -->
+            <div id="revenueReport" class="report-section" style="display: none;">
+                <div class="report-header">
+                    <div class="report-title">Revenue Analysis</div>
+                    <div class="actions">
+                        <button class="btn btn-success" onclick="exportReport('revenue', 'PDF')">Export PDF</button>
+                        <button class="btn btn-success" onclick="exportReport('revenue', 'EXCEL')">Export Excel</button>
+                    </div>
+                </div>
+                <div class="report-content">
+                    <div class="chart-container">
+                        Revenue Chart Placeholder
+                    </div>
+                    <table class="table" id="revenueTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Sessions</th>
+                                <th>Users</th>
+                                <th>Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="4" class="loading">Loading revenue data...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- User Usage Report -->
+            <div id="userUsageReport" class="report-section" style="display: none;">
+                <div class="report-header">
+                    <div class="report-title">User Usage Analysis</div>
+                    <div class="actions">
+                        <button class="btn btn-success" onclick="exportReport('user-usage', 'PDF')">Export PDF</button>
+                        <button class="btn btn-success" onclick="exportReport('user-usage', 'EXCEL')">Export Excel</button>
+                    </div>
+                </div>
+                <div class="report-content">
+                    <table class="table" id="userUsageTable">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Email</th>
+                                <th>Sessions</th>
+                                <th>Total Minutes</th>
+                                <th>Revenue</th>
+                                <th>Avg Session</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="6" class="loading">Loading user usage data...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Client Usage Report -->
+            <div id="clientUsageReport" class="report-section" style="display: none;">
+                <div class="report-header">
+                    <div class="report-title">Client Usage Analysis</div>
+                    <div class="actions">
+                        <button class="btn btn-success" onclick="exportReport('client-usage', 'PDF')">Export PDF</button>
+                        <button class="btn btn-success" onclick="exportReport('client-usage', 'EXCEL')">Export Excel</button>
+                    </div>
+                </div>
+                <div class="report-content">
+                    <table class="table" id="clientUsageTable">
+                        <thead>
+                            <tr>
+                                <th>Client</th>
+                                <th>Status</th>
+                                <th>Sessions</th>
+                                <th>Usage (Hours)</th>
+                                <th>Revenue</th>
+                                <th>Utilization</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="6" class="loading">Loading client usage data...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Set default dates (last 30 days)
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(endDate.getDate() - 30);
+
+        document.getElementById('startDate').value = startDate.toISOString().split('T')[0];
+        document.getElementById('endDate').value = endDate.toISOString().split('T')[0];
+
+        let currentReport = 'overview';
+        const API_BASE = '/api/reports';
+
+        // Load initial system overview
+        window.addEventListener('load', () => {
+            loadSystemOverview();
+        });
+
+        async function loadSystemOverview() {
+            try {
+                const response = await fetch(`${API_BASE}/system-overview`);
+                if (!response.ok) throw new Error('Failed to load system overview');
+
+                const data = await response.json();
+                displaySystemOverview(data);
+            } catch (error) {
+                showError('Failed to load system overview: ' + error.message);
+            }
+        }
+
+        function displaySystemOverview(data) {
+            const container = document.getElementById('overviewMetrics');
+            container.innerHTML = `
+                <div class="metric-card primary">
+                    <div class="metric-value">${data.totalUsers}</div>
+                    <div class="metric-label">Total Users</div>
+                </div>
+                <div class="metric-card success">
+                    <div class="metric-value">${data.activeUsers}</div>
+                    <div class="metric-label">Active Users</div>
+                </div>
+                <div class="metric-card primary">
+                    <div class="metric-value">${data.totalClients}</div>
+                    <div class="metric-label">Total Clients</div>
+                </div>
+                <div class="metric-card success">
+                    <div class="metric-value">${data.activeSessions}</div>
+                    <div class="metric-label">Active Sessions</div>
+                </div>
+                <div class="metric-card warning">
+                    <div class="metric-value">$${data.todayRevenue.toFixed(2)}</div>
+                    <div class="metric-label">Today's Revenue</div>
+                </div>
+                <div class="metric-card danger">
+                    <div class="metric-value">$${data.totalRevenue.toFixed(2)}</div>
+                    <div class="metric-label">Total Revenue</div>
+                </div>
+            `;
+        }
+
+        function generateReport() {
+            const reportType = document.getElementById('reportType').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            if (!startDate || !endDate) {
+                showError('Please select both start and end dates');
+                return;
+            }
+
+            if (new Date(startDate) >= new Date(endDate)) {
+                showError('Start date must be before end date');
+                return;
+            }
+
+            hideAllReports();
+            currentReport = reportType;
+
+            switch (reportType) {
+                case 'overview':
+                    document.getElementById('systemOverview').style.display = 'block';
+                    loadSystemOverview();
+                    break;
+                case 'revenue':
+                    document.getElementById('revenueReport').style.display = 'block';
+                    loadRevenueReport(startDate, endDate);
+                    break;
+                case 'users':
+                    document.getElementById('userUsageReport').style.display = 'block';
+                    loadUserUsageReport(startDate, endDate);
+                    break;
+                case 'clients':
+                    document.getElementById('clientUsageReport').style.display = 'block';
+                    loadClientUsageReport(startDate, endDate);
+                    break;
+            }
+        }
+
+        async function loadRevenueReport(startDate, endDate) {
+            try {
+                const response = await fetch(`${API_BASE}/revenue?startDate=${startDate}&endDate=${endDate}`);
+                if (!response.ok) throw new Error('Failed to load revenue report');
+
+                const data = await response.json();
+                displayRevenueReport(data);
+            } catch (error) {
+                showError('Failed to load revenue report: ' + error.message);
+            }
+        }
+
+        function displayRevenueReport(data) {
+            const tbody = document.querySelector('#revenueTable tbody');
+            tbody.innerHTML = data.dailyBreakdown.map(day => `
+                <tr>
+                    <td>${new Date(day.date).toLocaleDateString()}</td>
+                    <td>${day.sessions}</td>
+                    <td>${day.uniqueUsers}</td>
+                    <td>$${day.revenue.toFixed(2)}</td>
+                </tr>
+            `).join('');
+        }
+
+        async function loadUserUsageReport(startDate, endDate) {
+            try {
+                const response = await fetch(`${API_BASE}/user-usage?startDate=${startDate}&endDate=${endDate}`);
+                if (!response.ok) throw new Error('Failed to load user usage report');
+
+                const data = await response.json();
+                displayUserUsageReport(data);
+            } catch (error) {
+                showError('Failed to load user usage report: ' + error.message);
+            }
+        }
+
+        function displayUserUsageReport(data) {
+            const tbody = document.querySelector('#userUsageTable tbody');
+            tbody.innerHTML = data.map(user => `
+                <tr>
+                    <td>${user.username}</td>
+                    <td>${user.email}</td>
+                    <td>${user.totalSessions}</td>
+                    <td>${Math.round(user.totalUsageMinutes)}</td>
+                    <td>$${user.totalRevenue.toFixed(2)}</td>
+                    <td>${Math.round(user.averageSessionDuration)}m</td>
+                </tr>
+            `).join('');
+        }
+
+        async function loadClientUsageReport(startDate, endDate) {
+            try {
+                const response = await fetch(`${API_BASE}/client-usage?startDate=${startDate}&endDate=${endDate}`);
+                if (!response.ok) throw new Error('Failed to load client usage report');
+
+                const data = await response.json();
+                displayClientUsageReport(data);
+            } catch (error) {
+                showError('Failed to load client usage report: ' + error.message);
+            }
+        }
+
+        function displayClientUsageReport(data) {
+            const tbody = document.querySelector('#clientUsageTable tbody');
+            tbody.innerHTML = data.map(client => `
+                <tr>
+                    <td>${client.clientName}</td>
+                    <td><span class="badge badge-${getStatusBadgeClass(client.status)}">${client.status}</span></td>
+                    <td>${client.totalSessions}</td>
+                    <td>${(client.totalUsageMinutes / 60).toFixed(1)}</td>
+                    <td>$${client.totalRevenue.toFixed(2)}</td>
+                    <td>${client.utilizationPercentage.toFixed(1)}%</td>
+                </tr>
+            `).join('');
+        }
+
+        function getStatusBadgeClass(status) {
+            switch (status.toLowerCase()) {
+                case 'active': return 'success';
+                case 'busy': return 'warning';
+                case 'offline': return 'danger';
+                default: return 'secondary';
+            }
+        }
+
+        async function exportReport(reportType, format) {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/export/${reportType}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        startDate: startDate,
+                        endDate: endDate,
+                        format: format
+                    })
+                });
+
+                if (!response.ok) throw new Error('Failed to export report');
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `report-${reportType}-${startDate}-to-${endDate}.${format.toLowerCase()}`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            } catch (error) {
+                showError('Failed to export report: ' + error.message);
+            }
+        }
+
+        function refreshOverview() {
+            loadSystemOverview();
+        }
+
+        function hideAllReports() {
+            document.getElementById('systemOverview').style.display = 'none';
+            document.getElementById('revenueReport').style.display = 'none';
+            document.getElementById('userUsageReport').style.display = 'none';
+            document.getElementById('clientUsageReport').style.display = 'none';
+        }
+
+        function showError(message) {
+            const errorElement = document.getElementById('error-message');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+            setTimeout(() => {
+                errorElement.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

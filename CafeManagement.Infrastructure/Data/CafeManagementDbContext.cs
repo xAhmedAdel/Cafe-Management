@@ -1,9 +1,10 @@
 using CafeManagement.Core.Entities;
+using CafeManagement.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace CafeManagement.Infrastructure.Data;
 
-public class CafeManagementDbContext : DbContext
+public class CafeManagementDbContext : DbContext, IApplicationDbContext
 {
     public CafeManagementDbContext(DbContextOptions<CafeManagementDbContext> options) : base(options)
     {
@@ -14,6 +15,9 @@ public class CafeManagementDbContext : DbContext
     public DbSet<Session> Sessions { get; set; }
     public DbSet<LockScreenConfig> LockScreenConfigs { get; set; }
     public DbSet<UsageLog> UsageLogs { get; set; }
+    public DbSet<BillingSettings> BillingSettings { get; set; }
+    public DbSet<ClientDeployment> ClientDeployments { get; set; }
+    public DbSet<DeploymentLog> DeploymentLogs { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -86,6 +90,48 @@ public class CafeManagementDbContext : DbContext
                   .OnDelete(DeleteBehavior.SetNull);
         });
 
+        modelBuilder.Entity<BillingSettings>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.HourlyRate).HasDefaultValue(20.00m);
+            entity.Property(e => e.Currency).HasDefaultValue("L.E").HasMaxLength(10);
+            entity.Property(e => e.MinimumSessionDuration).HasDefaultValue("1 hour").HasMaxLength(50);
+            entity.Property(e => e.RoundUpToNearestHour).HasDefaultValue(true);
+            entity.Property(e => e.Description).HasMaxLength(200);
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+        });
+
+        modelBuilder.Entity<ClientDeployment>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.ClientName).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.IpAddress).IsRequired().HasMaxLength(15);
+            entity.Property(e => e.MacAddress).HasMaxLength(20);
+            entity.Property(e => e.Location).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Version).HasDefaultValue("1.0.0").HasMaxLength(20);
+            entity.Property(e => e.TargetVersion).HasDefaultValue("1.0.0").HasMaxLength(20);
+            entity.Property(e => e.Status).HasDefaultValue(DeploymentStatus.Pending);
+            entity.Property(e => e.AutoUpdateEnabled).HasDefaultValue(true);
+            entity.HasOne(e => e.Client)
+                  .WithOne()
+                  .HasForeignKey<ClientDeployment>(e => e.ClientId)
+                  .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<DeploymentLog>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Action).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Level).HasDefaultValue(DeploymentLogLevel.Info);
+            entity.Property(e => e.Message).IsRequired();
+            entity.Property(e => e.Success).HasDefaultValue(true);
+            entity.Property(e => e.Timestamp).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.HasOne(e => e.ClientDeployment)
+                  .WithMany(d => d.DeploymentLogs)
+                  .HasForeignKey(e => e.ClientDeploymentId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
         SeedData(modelBuilder);
     }
 
@@ -120,5 +166,20 @@ public class CafeManagementDbContext : DbContext
         };
 
         modelBuilder.Entity<User>().HasData(operatorUser);
+
+        var defaultBillingSettings = new BillingSettings
+        {
+            Id = 1,
+            HourlyRate = 20.00m,
+            Currency = "L.E",
+            MinimumSessionDuration = "1 hour",
+            RoundUpToNearestHour = true,
+            Description = "Default billing configuration",
+            IsActive = true,
+            CreatedAt = fixedDateTime,
+            UpdatedAt = fixedDateTime
+        };
+
+        modelBuilder.Entity<BillingSettings>().HasData(defaultBillingSettings);
     }
 }

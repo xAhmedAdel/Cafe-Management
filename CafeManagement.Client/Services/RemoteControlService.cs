@@ -12,7 +12,7 @@ public class RemoteControlService : IRemoteControlService
     private readonly IScreenCaptureService _screenCaptureService;
     private readonly ISignalRService _signalRService;
     private readonly ILogger<RemoteControlService> _logger;
-    private readonly Timer _screenshotTimer;
+    private readonly System.Threading.Timer _screenshotTimer;
     private readonly object _captureLock = new object();
     private bool _isRemoteControlActive = false;
     private CancellationTokenSource? _cancellationTokenSource;
@@ -48,7 +48,7 @@ public class RemoteControlService : IRemoteControlService
         _signalRService = signalRService;
         _logger = logger;
 
-        _screenshotTimer = new Timer(CaptureScreenshotCallback, null, Timeout.Infinite, Timeout.Infinite);
+        _screenshotTimer = new System.Threading.Timer(CaptureScreenshotCallback, null, Timeout.Infinite, Timeout.Infinite);
     }
 
     public async Task SendScreenshotAsync(byte[] imageData)
@@ -194,7 +194,7 @@ public class RemoteControlService : IRemoteControlService
         {
             lock (_captureLock)
             {
-                var imageData = _screenCaptureService.CaptureScreenAsync().GetAwaiter().GetResult();
+                var imageData = _screenCaptureService.CaptureFullDesktopAsync().GetAwaiter().GetResult();
                 if (imageData.Length > 0)
                 {
                     _ = SendScreenshotAsync(imageData);

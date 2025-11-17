@@ -51,15 +51,18 @@ public class LockScreenService : ILockScreenService
                         var cafeService = _serviceProvider.GetService<ICafeManagementService>();
                         var systemService = _serviceProvider.GetService<ISystemService>();
                         var signalRService = _serviceProvider.GetService<ISignalRService>();
+                        var userSessionService = _serviceProvider.GetService<IUserSessionService>();
+                        var systemTrayService = _serviceProvider.GetService<ISystemTrayService>();
 
                         // Create view model and window
                         _lockScreenViewModel = new LockScreenViewModel(
                             cafeService ?? throw new InvalidOperationException("ICafeManagementService not registered"),
                             systemService ?? throw new InvalidOperationException("ISystemService not registered"),
-                            signalRService ?? throw new InvalidOperationException("ISignalRService not registered")
+                            signalRService ?? throw new InvalidOperationException("ISignalRService not registered"),
+                            userSessionService ?? throw new InvalidOperationException("IUserSessionService not registered")
                         );
 
-                        _lockScreenWindow = new LockScreenWindow(_lockScreenViewModel)
+                        _lockScreenWindow = new LockScreenWindow(_lockScreenViewModel, systemTrayService ?? throw new InvalidOperationException("ISystemTrayService not registered"))
                         {
                             WindowState = WindowState.Maximized,
                             WindowStyle = WindowStyle.None,

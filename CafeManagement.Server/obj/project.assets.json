@@ -1634,6 +1634,9 @@
       "CafeManagement.Core/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore": "10.0.0"
+        },
         "compile": {
           "bin/placeholder/CafeManagement.Core.dll": {}
         },
@@ -4253,6 +4256,7 @@
   "projectFileDependencyGroups": {
     "net10.0": [
       "CafeManagement.Application >= 1.0.0",
+      "CafeManagement.Core >= 1.0.0",
       "CafeManagement.Infrastructure >= 1.0.0",
       "Microsoft.AspNetCore.Authentication.JwtBearer >= 10.0.0",
       "Microsoft.AspNetCore.OpenApi >= 10.0.0",
@@ -4294,6 +4298,9 @@
           "projectReferences": {
             "C:\\Users\\sokar\\Cafe-Management\\CafeManagement.Application\\CafeManagement.Application.csproj": {
               "projectPath": "C:\\Users\\sokar\\Cafe-Management\\CafeManagement.Application\\CafeManagement.Application.csproj"
+            },
+            "C:\\Users\\sokar\\Cafe-Management\\CafeManagement.Core\\CafeManagement.Core.csproj": {
+              "projectPath": "C:\\Users\\sokar\\Cafe-Management\\CafeManagement.Core\\CafeManagement.Core.csproj"
             },
             "C:\\Users\\sokar\\Cafe-Management\\CafeManagement.Infrastructure\\CafeManagement.Infrastructure.csproj": {
               "projectPath": "C:\\Users\\sokar\\Cafe-Management\\CafeManagement.Infrastructure\\CafeManagement.Infrastructure.csproj"

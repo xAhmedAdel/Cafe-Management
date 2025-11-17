@@ -1,3 +1,4 @@
+using CafeManagement.Core.Entities;
 using CafeManagement.Core.Interfaces;
 using CafeManagement.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -39,6 +40,12 @@ public class Repository<T> : IRepository<T> where T : class
 
     public async Task UpdateAsync(T entity)
     {
+        // Fix for Client entities: ensure CurrentSessionId is never 0
+        if (entity is Client client && client.CurrentSessionId == 0)
+        {
+            client.CurrentSessionId = null;
+        }
+
         _dbSet.Update(entity);
         await Task.CompletedTask;
     }

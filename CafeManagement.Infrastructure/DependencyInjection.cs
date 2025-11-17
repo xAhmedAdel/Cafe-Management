@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using CafeManagement.Core.Interfaces;
 using CafeManagement.Infrastructure.Data;
 using CafeManagement.Infrastructure.Services;
+using CafeManagement.Application.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace CafeManagement.Infrastructure;
@@ -14,11 +15,13 @@ public static class DependencyInjection
         services.AddDbContext<CafeManagementDbContext>(options =>
             options.UseSqlite(configuration.GetConnectionString("DefaultConnection")));
 
+        services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<CafeManagementDbContext>());
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<ISessionService, SessionService>();
         services.AddScoped<IClientService, ClientService>();
         services.AddScoped<IPasswordHasher<Core.Entities.User>, PasswordHasher<Core.Entities.User>>();
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+        services.AddScoped<IDeploymentService, DeploymentService>();
 
         return services;
     }
