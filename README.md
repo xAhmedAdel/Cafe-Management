@@ -1,157 +1,251 @@
-# 🏢 Cafe Management System
+# 🖥️ Cafe Management System
 
-A comprehensive, production-ready internet cafe management system built with modern .NET 10 technology stack featuring real-time communication, automatic deployment, and advanced remote control capabilities.
+![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)
+![ASP.NET Core](https://img.shields.io/badge/ASP.NET%20Core-8.0-green.svg)
+![SignalR](https://img.shields.io/badge/SignalR-8.0-blue.svg)
+![WPF](https://img.shields.io/badge/WPF-.NET-blue.svg)
+![SQLite](https://img.shields.io/badge/SQLite-3.0-red.svg)
+![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 
-## 🎯 Key Features
+A comprehensive, modern internet cafe management system built with .NET 10.0, featuring real-time client management, user authentication, billing, and remote control capabilities.
 
-### **Core Functionality**
-- **User Management**: Admin, Operator, and Customer roles with authentication
-- **Client Management**: Real-time client status tracking and monitoring
-- **Session Management**: Time-based billing with automatic calculations
-- **LockScreen System**: Beautiful animated lockscreen with countdown timers
-- **Remote Control**: Full screen sharing with mouse and keyboard control
-- **Real-time Updates**: SignalR-powered live communication
-- **Automatic Deployment**: One-click client installation and updates
+## ✨ Features
 
-### **Technical Excellence**
-- **Modern Architecture**: Clean Architecture with CQRS pattern
-- **High Performance**: Optimized screen capture and data transmission
-- **Database**: SQLite with EF Core for reliable data storage
-- **Real-time**: SignalR for instant client-server communication
-- **Cross-platform**: .NET 10 with WPF client application
-- **Comprehensive Testing**: Unit and integration test coverage
+### 🎯 Core Features
+- **Real-time Client Management** - Live status tracking with SignalR
+- **User Authentication** - Secure JWT-based login system
+- **Session Management** - Time tracking and billing automation
+- **Remote Control** - Screen sharing and remote desktop control
+- **Billing System** - Automated cost calculation and management
+- **Multi-role Support** - Admin, Operator, and Customer roles
 
-## 🏗️ Architecture
+### 🛠️ Admin Capabilities
+- **Client Dashboard** - Real-time monitoring of all workstations
+- **Remote Desktop Control** - 10 FPS screen sharing with mouse/keyboard control
+- **User Management** - Add credits, manage accounts, view history
+- **Session Control** - Start, extend, and end user sessions
+- **Live Monitoring** - Real-time screen viewing and messaging
+- **Billing Reports** - Detailed usage and revenue tracking
 
-### **Clean Architecture Layers**
+### 💻 Client Features
+- **Animated Lockscreen** - Beautiful gradient UI with particle effects
+- **User Login Interface** - Secure credential input with session timer
+- **Live Session Dashboard** - Real-time cost and duration tracking
+- **System Tray Integration** - Background operation with easy access
+- **Auto Registration** - Automatic client discovery and server connection
+- **Session Extensions** - Easy time purchase and renewal
+
+### 🔄 Real-time Communication
+- **SignalR Hub** - Instant bidirectional communication
+- **Status Broadcasting** - Live updates to all connected operators
+- **Screen Sharing** - Compressed JPEG streaming at 10 FPS
+- **Text Messaging** - Direct admin-to-user communication
+- **Remote Commands** - Lock/unlock/restart operations
+
+## 🏗️ Architecture Overview
+
+### Clean Architecture Design
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    Presentation Layer                           │
-├─────────────────────────────────────────────────────────────┤
-│  Server (ASP.NET Core)      │    Client (WPF)                │
-│  ┌─────────────────────┐     │    ┌─────────────────────────┐     │
-│  │  Controllers      │     │    │  Views & Controls        │     │
-│  │  SignalR Hub       │◄────┼── │    │  ViewModels            │     │
-│  │  Deployment       │     │    │  Services             │     │
-│  └─────────────────────┘�     │    └─────────────────────────┘     │
-└─────────────────────────────────────────────────────────────┘
-┌─────────────────────────────────────────────────────────────┐
-│                    Application Layer                           │
-├─────────────────────────────────────────────────────────────┤
-│  ┌─────────────────────┐     │    ┌─────────────────────┐     │
-│  │  Commands & Queries │     │    │  Services           │     │
-│  │  DTOs & Validators│     │    │  Handlers           │     │
-│  │  AutoMapper       │     │    │  Mapping Profiles     │     │
-│  └─────────────────────┘     │    └─────────────────────┘     │
-└─────────────────────────────────────────────────────────────┘
-┌─────────────────────────────────────────────────────────────┐
-│                     Infrastructure Layer                        │
-├─────────────────────────────────────────────────────────────┤
-│  ┌─────────────────────┐     │    ┌─────────────────────┐     │
-│  │  EF Core Context │     │    │  Repositories        │     │
-│  │  Data Seeding     │     │  │  Services           │     │
-│  │  SignalR         │     │    │  Authentication      │     │
-│  └─────────────────────┘     │    └─────────────────────┘     │
-└─────────────────────────────────────────────────────────────┘
-┌─────────────────────────────────────────────────────────────┐
-│                        Core Layer                           │
-│  ┌─────────────────────┐     │  ┌─────────────────────┐  │
-│  │  Entities          │     │  │  Enums            │  │
-│  │  Value Objects    │     │  │  Interfaces        │  │
-│  │  Domain Events    │     │  │  Services         │  │
-│  └─────────────────────┘     │  └─────────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
+CafeManagement.Core          # Domain layer (Entities, Enums, Interfaces)
+CafeManagement.Application   # Application layer (Services, DTOs, CQRS)
+CafeManagement.Infrastructure # Infrastructure layer (EF Core, Repositories)
+CafeManagement.Server        # ASP.NET Core Web API with SignalR
+CafeManagement.Client        # WPF Desktop Client Application
 ```
 
-## 🚀 Getting Started
+### Technology Stack
+- **Backend**: ASP.NET Core 8.0 with Entity Framework Core
+- **Frontend**: WPF with MVVM pattern
+- **Database**: SQLite with automatic migrations
+- **Real-time**: SignalR for live communication
+- **Authentication**: JWT tokens with password hashing
+- **Mapping**: AutoMapper for object mapping
+- **Patterns**: CQRS with MediatR, Repository Pattern
 
-### **Prerequisites**
-- .NET 10.0 SDK
-- Visual Studio 2022 or VS Code
-- Git
-
-### **Installation**
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd CafeManagementSystem
+### Component Architecture
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   WPF Client    │    │  Web Admin UI   │    │  Mobile Admin   │
+│                 │    │                 │    │                 │
+└─────────┬───────┘    └─────────┬───────┘    └─────────┬───────┘
+          │                      │                      │
+          └──────────────────────┼──────────────────────┘
+                                 │
+                    ┌─────────────┴─────────────┐
+                    │   ASP.NET Core Server     │
+                    │  (Web API + SignalR Hub)  │
+                    └─────────────┬─────────────┘
+                                 │
+                    ┌─────────────┴─────────────┐
+                    │   SQLite Database         │
+                    │   (EF Core Migrations)    │
+                    └───────────────────────────┘
 ```
 
-2. Build the solution:
-```bash
-dotnet restore
-dotnet build
+## 🔄 Business Logic & Workflows
+
+### Client State Management
+```
+Offline ──> Idle ──> Online ──> InSession ──> Locked
+   ↑                                      ↓
+   └────────────── Session End ────────────┘
 ```
 
-3. Run the server:
-```bash
-dotnet run --project CafeManagement.Server
-```
+### Session Lifecycle
+1. **Client Registration** - Automatic discovery and server registration
+2. **User Authentication** - Login with credit validation
+3. **Session Activation** - Time tracking and billing start
+4. **Real-time Monitoring** - Live cost/duration updates
+5. **Session Extension** - Additional time purchases
+6. **Session Completion** - Final billing and client reset
 
-4. Run the client (from another terminal):
-```bash
-dotnet run --project CafeManagement.Client
-```
+### User Roles & Permissions
+- **Administrator**: Full system access and user management
+- **Operator**: Client control and session management
+- **Customer**: Basic workstation usage with time tracking
 
-## 🔧 Configuration
+## 🚀 Installation & Setup
 
-### **Server Configuration**
-The server uses the following default configuration in `appsettings.json`:
+### Prerequisites
+- **.NET 10.0 SDK** - [Download .NET 10.0](https://dotnet.microsoft.com/download)
+- **Visual Studio 2022** or **VS Code** - Development environment
+- **Windows OS** - Required for WPF client application
+- **Git** - Version control system
+
+### Quick Start
+
+1. **Clone the Repository**
+   ```bash
+   git clone https://github.com/xAhmedAdel/Cafe-Management.git
+   cd Cafe-Management
+   ```
+
+2. **Navigate to Server Project**
+   ```bash
+   cd CafeManagement.Server
+   ```
+
+3. **Run the Server**
+   ```bash
+   dotnet run
+   ```
+   The server will start on `http://localhost:5032`
+
+4. **In New Terminal, Navigate to Client Project**
+   ```bash
+   cd CafeManagement.Client
+   ```
+
+5. **Run the Client Application**
+   ```bash
+   dotnet run
+   ```
+
+### Database Setup
+The SQLite database is automatically created and configured on first run:
+- Database file: `CafeManagement.Server/cafemanagement.db`
+- Migrations are applied automatically
+- Default admin user is created
+
+### Configuration
+
+#### Server Configuration (`appsettings.json`)
 ```json
 {
   "ConnectionStrings": {
     "DefaultConnection": "Data Source=cafemanagement.db"
   },
   "JwtSettings": {
-    "Secret": "ThisIsASecretKeyForJWTTokenGeneration12345678901234567890",
-    "Issuer": "CafeManagementSystem",
-    "Audience": "CafeManagementClients",
-    "ExpiryInHours": "24"
+    "SecretKey": "your-secret-key-here",
+    "ExpiryDays": 7
+  },
+  "SignalR": {
+    "EnableDetailedErrors": true
   }
 }
 ```
 
-### **Client Configuration**
-The client automatically configures itself on first run:
-- Registers with the server
-- Saves configuration to `%APPDATA%\CafeManagement\config.json`
-- Sets up Windows startup task for auto-launch
-
-## 📖 API Documentation
-
-### **Authentication**
-```http
-POST /api/auth/login
-Content-Type: application/json
-
+#### Client Configuration (`appsettings.json`)
+```json
 {
-  "username": "admin",
-  "password": "admin123"
+  "ServerSettings": {
+    "BaseUrl": "http://localhost:5032",
+    "HubUrl": "http://localhost:5032/hub/cafemanagement"
+  }
 }
 ```
 
-### **Client Management**
-```http
-GET /api/clients
-POST /api/clients
-PUT /api/clients/{id}/status
-DELETE /api/clients/{id}
+## 📖 Usage Guide
+
+### Accessing the Applications
+
+#### Admin Web Interface
+1. Open your browser and navigate to: `http://localhost:5032/admin`
+2. Login with default credentials:
+   - Username: `admin`
+   - Password: `admin123`
+
+#### Client Desktop Application
+1. Launch the WPF client application
+2. The client will auto-register with the server
+3. Use the lockscreen interface to log in as a customer
+
+### Key Features Usage
+
+#### Starting a User Session
+1. **From Client**: Enter username and password on the lockscreen
+2. **From Admin**: Select a client and click "Start Session"
+3. **Real-time Tracking**: Monitor session duration and cost live
+
+#### Remote Desktop Control
+1. **Select Client**: Choose a client from the admin dashboard
+2. **Click Remote Control**: View the client's screen in real-time
+3. **Take Control**: Enable mouse/keyboard control for assistance
+4. **Send Messages**: Communicate directly with the user
+
+#### Managing User Credits
+1. **Select User**: Choose a user from the user management section
+2. **Add Credits**: Enter amount and payment method
+3. **View History**: Track usage patterns and payments
+
+## 🔌 API Documentation
+
+### Authentication Endpoints
+```
+POST /api/auth/login          - User authentication
+POST /api/auth/register       - New user registration
+POST /api/auth/refresh        - Refresh JWT token
 ```
 
-### **Session Management**
-```http
-GET /api/sessions
-POST /api/sessions
-POST /api/sessions/{id}/end
-POST /api/sessions/{id}/extend
+### Client Management
+```
+GET  /api/clients            - Get all clients with status
+GET  /api/clients/{id}       - Get specific client details
+POST /api/clients/register   - Register new client
+PUT  /api/clients/{id}       - Update client information
 ```
 
-### **Deployment**
-```http
-GET /api/deployment/check-updates?currentVersion=1.0.0.0
-GET /api/deployment/download
-GET /api/deployment/installer
-POST /api/deployment/register-client
+### Session Management
+```
+POST /api/sessions/start     - Start new session
+POST /api/sessions/{id}/end  - End active session
+GET  /api/sessions/active/{clientId} - Get active session
+GET  /api/sessions/{id}      - Get session details
+```
+
+### SignalR Hub Methods
+```csharp
+// Client to Server
+RegisterClient(ClientInfo client)
+StartSession(int userId)
+EndSession(int sessionId)
+SendScreenCapture(byte[] imageData)
+
+// Server to Client
+LockWorkstation()
+UnlockWorkstation()
+ShowMessage(string message)
+RemoteControl(bool enable)
 ```
 
 ## 🔌 Real-time Features
@@ -256,80 +350,181 @@ The system uses SQLite with the following main entities:
 - Rollback capabilities
 - Update notification system
 
-## 🧪 Testing
+## 🛠️ Development & Contributing
 
-### **Run Tests**
+### Development Environment Setup
+1. **Clone Repository**
+   ```bash
+   git clone https://github.com/xAhmedAdel/Cafe-Management.git
+   ```
+
+2. **Open Solution** in Visual Studio 2022 or VS Code
+   ```bash
+   # VS Code
+   code Cafe-Management.sln
+
+   # Visual Studio
+   Cafe-Management.sln
+   ```
+
+3. **Restore NuGet Packages**
+   ```bash
+   dotnet restore
+   ```
+
+4. **Build Solution**
+   ```bash
+   dotnet build
+   ```
+
+### Running Tests
 ```bash
+# Run all tests
+dotnet test
+
+# Run specific project tests
 dotnet test CafeManagement.Tests
 ```
 
-### **Test Coverage**
-- Unit tests for business logic
-- Integration tests for API endpoints
-- SignalR real-time communication tests
-- UI automation for client application
-
-## 📋 Project Structure
-
+### Project Structure
 ```
-CafeManagementSystem/
-├── src/
-│   ├── CafeManagement.Core/          # Domain Layer
-│   │   ├── Entities/
-│   │   ├── Enums/
-│   │   ├── Interfaces/
-│   │   └── ValueObjects/
-│   ├── CafeManagement.Application/  # Application Layer
-│   │   ├── Services/
-│   │   ├── Commands/
-│   │   ├── Queries/
-│   │   ├── DTOs/
-│   │   └── Validators/
-│   ├── CafeManagement.Infrastructure/ # Infrastructure Layer
-│   │   ├── Data/
-│   │   ├── Repositories/
-│   │   ├── Services/
-│   │   └── ExternalServices/
-│   ├── CafeManagement.Server/        # Server Application
-│   │   ├── Controllers/
-│   │   ├── Hubs/
-│   │   ├── Services/
-│   │   └── Configuration/
-│   └── CafeManagement.Client/        # Client Application
-│       ├── Services/
-│       ├── Views/
-│       ├── ViewModels/
-│       ├── Controls/
-│       └── Resources/
-├── tests/
-│   ├── Unit/
-│   ├── Integration/
-│   └── E2E/
-└── docs/
-    ├── API.md
-    ├── Deployment.md
-    └── UserGuide.md
+Cafe-Management/
+├── 📁 CafeManagement.Core/
+│   ├── 📁 Entities/           # Domain entities
+│   ├── 📁 Enums/              # System enums
+│   └── 📁 Interfaces/         # Domain interfaces
+├── 📁 CafeManagement.Application/
+│   ├── 📁 DTOs/               # Data transfer objects
+│   ├── 📁 Services/           # Application services
+│   └── 📁 Features/           # CQRS features
+├── 📁 CafeManagement.Infrastructure/
+│   ├── 📁 Data/               # EF Core DbContext
+│   ├── 📁 Repositories/       # Repository implementations
+│   └── 📁 Configurations/     # Entity configurations
+├── 📁 CafeManagement.Server/
+│   ├── 📁 Controllers/        # API controllers
+│   ├── 📁 Hubs/               # SignalR hubs
+│   └── 📁 wwwroot/admin/      # Web admin interface
+├── 📁 CafeManagement.Client/
+│   ├── 📁 Views/              # WPF windows
+│   ├── 📁 ViewModels/         # MVVM view models
+│   ├── 📁 Services/           # Client services
+│   └── 📁 Models/             # Client models
+└── 📁 Tests/                  # Unit and integration tests
 ```
 
-## 🤝 Contributing
+### Contributing Guidelines
+1. **Fork the Repository**
+2. **Create Feature Branch** (`git checkout -b feature/amazing-feature`)
+3. **Commit Changes** (`git commit -m 'Add amazing feature'`)
+4. **Push to Branch** (`git push origin feature/amazing-feature`)
+5. **Open Pull Request**
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Submit a pull request
+### Code Style
+- Follow **C# naming conventions**
+- Use **clean architecture** principles
+- Write **unit tests** for new features
+- Update **documentation** for API changes
+- Use **async/await** for I/O operations
 
-## 📄 License
+## 🔒 Security Features
+
+### Authentication & Authorization
+- **JWT Token-based Authentication** with expiration
+- **Password Hashing** using BCrypt with salt
+- **Role-based Access Control** (Admin, Operator, Customer)
+- **Session Management** with secure logout
+- **CORS Configuration** for web interface security
+
+### Data Protection
+- **SQL Injection Prevention** via Entity Framework Core
+- **XSS Protection** in web interface
+- **Input Validation** for all API endpoints
+- **Secure File Upload** restrictions
+- **Audit Logging** for compliance
+
+## 📊 Performance Optimizations
+
+### Real-time Communication
+- **SignalR Connection Pooling** for scalability
+- **Compressed Screen Sharing** (JPEG at 10 FPS)
+- **Efficient Message Broadcasting** with groups
+- **Connection Health Monitoring** with auto-reconnect
+- **Memory-efficient Image Processing**
+
+### Database Optimizations
+- **Indexed Queries** for fast data retrieval
+- **Connection Pooling** for concurrent access
+- **Lazy Loading** for related entities
+- **Efficient Migrations** with minimal downtime
+- **SQLite Optimizations** for embedded deployment
+
+## 🚀 Deployment
+
+### Production Server Setup
+1. **IIS Hosting** for ASP.NET Core application
+2. **Windows Service** for background processing
+3. **SQL Server** migration option for scaling
+4. **Load Balancer** for high availability
+5. **SSL Certificate** for HTTPS security
+
+### Client Deployment
+1. **ClickOnce Deployment** for easy updates
+2. **Windows Installer** (.msi) package
+3. **Auto-update Service** for version management
+4. **System Tray Integration** for background operation
+5. **Startup Configuration** for automatic launch
+
+## 🖼️ Screenshots & Demo
+
+### Admin Interface
+![Admin Dashboard](docs/images/admin-dashboard.png)
+*Real-time client monitoring and control*
+
+### Client Lockscreen
+![Client Lockscreen](docs/images/lockscreen.png)
+*Animated user authentication interface*
+
+### Remote Control
+![Remote Control](docs/images/remote-control.png)
+*Live desktop sharing and control*
+
+### User Dashboard
+![User Dashboard](docs/images/user-dashboard.png)
+*Session tracking and management*
+
+## 📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🆘 Support
+## 🤝 Support & Contact
 
-For support and questions:
-- Create an issue in the repository
-- Email: support@cafemanagement.com
-- Documentation: [Wiki](https://github.com/username/CafeManagementSystem/wiki)
+### Getting Help
+- **GitHub Issues**: Report bugs and request features
+- **Wiki**: Detailed documentation and guides
+- **Discussions**: Community support and Q&A
+
+### Contributors
+- **[@xAhmedAdel](https://github.com/xAhmedAdel)** - Project Owner & Lead Developer
+- **Contributors** - Thank you to all who contribute!
+
+### Acknowledgments
+- **Microsoft** for .NET and ASP.NET Core
+- **SignalR Team** for real-time communication framework
+- **Entity Framework Team** for excellent ORM
+- **Community** for feedback and contributions
 
 ---
 
-**Built with ❤️ using .NET 10 and modern software engineering practices.**
+## 🎯 Project Highlights
+
+⭐ **Modern Technology Stack** - Built with latest .NET 10.0 and best practices
+⭐ **Real-time Capabilities** - Instant communication and screen sharing
+⭐ **Production Ready** - Comprehensive error handling and security
+⭐ **Scalable Architecture** - Clean design for easy extension and maintenance
+⭐ **User-Friendly Interface** - Professional UI with excellent UX
+⭐ **Complete Feature Set** - Everything needed for cafe management operations
+
+**Ready to transform your internet cafe operations?** 🚀
+
+[⬆️ Back to Top](#-cafe-management-system)
