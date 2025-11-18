@@ -22,6 +22,7 @@ public partial class LockScreenWindow : Window
     private readonly Random _random = new();
     private readonly List<Ellipse> _particles = new();
     private UserDashboardWindow? _dashboardWindow;
+    private bool _isTransitioning = false;
 
     public UserLoginViewModel UserLoginViewModel => _userLoginViewModel;
 
@@ -35,21 +36,16 @@ public partial class LockScreenWindow : Window
         var serviceProvider = ((App)System.Windows.Application.Current).ServiceProvider;
         _userLoginViewModel = serviceProvider.GetRequiredService<UserLoginViewModel>();
 
-        // Subscribe to login success and dashboard events
+        // Subscribe to login success event only
         _userLoginViewModel.UserLoginSuccess += (sender, args) =>
         {
+            System.Diagnostics.Debug.WriteLine("UserLoginSuccess event received in LockScreenWindow");
             Dispatcher.Invoke(() =>
             {
+                System.Diagnostics.Debug.WriteLine("About to call ShowDashboardWindow from UserLoginSuccess handler");
                 // Close lockscreen and show dashboard
                 ShowDashboardWindow();
-            });
-        };
-
-        _userLoginViewModel.ShowDashboardRequested += (sender, args) =>
-        {
-            Dispatcher.Invoke(() =>
-            {
-                ShowDashboardWindow();
+                System.Diagnostics.Debug.WriteLine("ShowDashboardWindow called successfully");
             });
         };
 
@@ -323,24 +319,68 @@ public partial class LockScreenWindow : Window
     {
         try
         {
-            // Clear lockscreen display before hiding
-            _viewModel.ClearSessionDisplay();
+            // Prevent multiple calls
+            if (_isTransitioning)
+            {
+                System.Diagnostics.Debug.WriteLine("Already transitioning to dashboard, skipping duplicate call");
+                return;
+            }
 
+            _isTransitioning = true;
+
+            // Create dashboard window if needed
             if (_dashboardWindow == null)
             {
                 _dashboardWindow = new UserDashboardWindow(_userLoginViewModel);
-                _dashboardWindow.WindowStartupLocation = WindowStartupLocation.CenterScreen;
             }
 
-            _dashboardWindow.Show();
-            HideLockScreen(); // Hide instead of just Hide to ensure proper cleanup
+            // Set dashboard to take full height and 400px width, positioned on right side
+            var screenHeight = SystemParameters.PrimaryScreenHeight;
+            var screenWidth = SystemParameters.PrimaryScreenWidth;
+            _dashboardWindow.Left = screenWidth - 400; // Start from right edge
+            _dashboardWindow.Top = 0;
+            _dashboardWindow.Width = 400;
+            _dashboardWindow.Height = screenHeight;
+            _dashboardWindow.WindowState = WindowState.Normal;
 
-            // Update system tray
-            _systemTrayService.UpdateToolTip("Cafe Management - User Logged In");
+            // Show dashboard first with proper activation
+            _dashboardWindow.Show();
+            _dashboardWindow.Topmost = true; // Temporarily make topmost to ensure it appears
+            _dashboardWindow.BringIntoView();
+            _dashboardWindow.Focus();
+            _dashboardWindow.Activate();
+
+            // Wait a bit then remove topmost and hide lockscreen
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                try
+                {
+                    _dashboardWindow.Topmost = false;
+
+                    // Clear lockscreen display AFTER dashboard is visible
+                    _viewModel.ClearSessionDisplay();
+
+                    // Hide lockscreen completely
+                    HideLockScreen();
+
+                    // Update system tray
+                    _systemTrayService.UpdateToolTip("Cafe Management - User Logged In");
+
+                    System.Diagnostics.Debug.WriteLine("Dashboard transition completed successfully");
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error in dashboard transition: {ex.Message}");
+                }
+                finally
+                {
+                    _isTransitioning = false;
+                }
+            }), System.Windows.Threading.DispatcherPriority.Background);
         }
         catch (Exception ex)
         {
-            // Log error if needed
+            _isTransitioning = false;
             System.Diagnostics.Debug.WriteLine($"Error showing dashboard: {ex.Message}");
         }
     }

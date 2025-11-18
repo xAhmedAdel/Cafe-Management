@@ -2,8 +2,10 @@ using Microsoft.Extensions.Logging;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using System.Windows;
 using CafeManagement.Client.Services;
 using CafeManagement.Client.Services.Interfaces;
+using CafeManagement.Client.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Timers;
@@ -14,7 +16,6 @@ namespace CafeManagement.Client.ViewModels;
 public partial class UserLoginViewModel : ObservableObject, IDisposable
 {
     public event EventHandler? UserLoginSuccess;
-    public event EventHandler? ShowDashboardRequested;
     public event EventHandler? HideDashboardRequested;
 
     private readonly IUserSessionService _userSessionService;
@@ -127,9 +128,13 @@ public partial class UserLoginViewModel : ObservableObject, IDisposable
                 return;
             }
 
+            System.Diagnostics.Debug.WriteLine("DEBUG: About to call _userSessionService.LoginUserAsync");
             var success = await _userSessionService.LoginUserAsync(Username, Password, _clientId.Value);
+            System.Diagnostics.Debug.WriteLine($"DEBUG: _userSessionService.LoginUserAsync returned: {success}");
 
             _logger.LogInformation("Login result for user {Username}: {Success}", Username, success);
+            System.Diagnostics.Debug.WriteLine("DEBUG: Reached login result processing");
+            System.Diagnostics.Debug.WriteLine($"Login success value: {success}");
 
             if (success)
             {
@@ -146,9 +151,42 @@ public partial class UserLoginViewModel : ObservableObject, IDisposable
                     ShowTimeRemaining = true;
                 }
 
-                // Trigger the login success event to notify the window
+                // Force immediate UI transition - don't wait for events
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    try
+                    {
+                        // Hide any lockscreen windows directly
+                        foreach (Window window in System.Windows.Application.Current.Windows)
+                        {
+                            if (window is LockScreenWindow)
+                            {
+                                window.Hide();
+                                break;
+                            }
+                        }
+
+                        // Create and show dashboard window
+                        var dashboardWindow = new UserDashboardWindow(this);
+                        // Set dashboard to take full height and 400px width, positioned on right side
+                        var screenHeight = SystemParameters.PrimaryScreenHeight;
+                        var screenWidth = SystemParameters.PrimaryScreenWidth;
+                        dashboardWindow.Left = screenWidth - 400; // Start from right edge
+                        dashboardWindow.Top = 0;
+                        dashboardWindow.Width = 400;
+                        dashboardWindow.Height = screenHeight;
+                        dashboardWindow.WindowState = WindowState.Normal;
+                        dashboardWindow.Show();
+                        dashboardWindow.Activate();
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error transitioning to dashboard");
+                    }
+                });
+
+                // Also trigger the event as backup
                 UserLoginSuccess?.Invoke(this, EventArgs.Empty);
-                ShowDashboardRequested?.Invoke(this, EventArgs.Empty);
             }
             else
             {

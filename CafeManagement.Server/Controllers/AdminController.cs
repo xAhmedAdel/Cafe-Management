@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using CafeManagement.Server.Hubs;
 using CafeManagement.Core.Interfaces;
 using CafeManagement.Core.Entities;
@@ -32,26 +33,100 @@ public class AdminController : ControllerBase
         try
         {
             using var scope = _serviceProvider.CreateScope();
-            var clientService = scope.ServiceProvider.GetRequiredService<IClientService>();
+            var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
-            // Get all online clients
-            var clients = await clientService.GetOnlineClientsAsync();
-            var clientDtos = clients.Select(c => new ClientDto
+            // Get all clients from database
+            var allClients = await unitOfWork.Clients.GetAllAsync();
+            _logger.LogInformation($"Found {allClients.Count()} total clients in database");
+
+            // Get real-time connection data from SignalR hub
+            var hubContext = _serviceProvider.GetRequiredService<IHubContext<CafeManagementHub>>();
+            var realTimeConnections = new Dictionary<int, List<ClientConnectionInfo>>();
+
+            // Use reflection to access the private static field
+            var hubType = typeof(CafeManagementHub);
+            var clientConnectionsField = hubType.GetField("_clientConnections",
+                System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+
+            if (clientConnectionsField?.GetValue(null) is Dictionary<int, List<ClientConnectionInfo>> hubConnections)
             {
-                Id = c.Id,
-                Name = c.Name,
-                IPAddress = c.IPAddress,
-                MACAddress = c.MACAddress,
-                Status = c.Status,
-                LastSeen = c.LastSeen,
-                CurrentSessionId = c.CurrentSessionId
+                realTimeConnections = hubConnections;
+                _logger.LogInformation($"Found {realTimeConnections.Count} clients with real-time connections");
+            }
+
+            // Merge database clients with real-time connection data
+            var clientDtos = allClients.Select(c =>
+            {
+                var dto = new ClientDto
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    IPAddress = c.IPAddress,
+                    MACAddress = c.MACAddress,
+                    Status = c.Status,
+                    LastSeen = c.LastSeen,
+                    CurrentSessionId = c.CurrentSessionId,
+                    CreatedAt = c.CreatedAt,
+                    UpdatedAt = c.UpdatedAt
+                };
+
+                // Check if client has real-time connections
+                if (realTimeConnections.TryGetValue(c.Id, out var connections) && connections.Any())
+                {
+                    var activeConnection = connections.FirstOrDefault(conn => conn.IsActive);
+                    if (activeConnection != null)
+                    {
+                        dto.IsOnline = true;
+                        dto.ConnectionDetails = new ConnectionDetailsDto
+                        {
+                            ConnectionId = activeConnection.ConnectionId,
+                            ConnectedAt = activeConnection.ConnectedAt,
+                            LastSeen = activeConnection.LastSeen,
+                            IsActive = activeConnection.IsActive,
+                            IPAddress = activeConnection.IPAddress
+                        };
+
+                        // Update client status to Online if they have active connections
+                        if (dto.Status < ClientStatus.Idle || dto.Status > ClientStatus.InSession)
+                        {
+                            dto.Status = ClientStatus.Online;
+                        }
+
+                        _logger.LogInformation($"Client {c.Id} ({c.Name}) is online with active connection from {activeConnection.IPAddress}");
+                    }
+                    else
+                    {
+                        dto.IsOnline = false;
+                        // Update status to Offline if no active connections
+                        if (dto.Status >= ClientStatus.Idle && dto.Status <= ClientStatus.InSession)
+                        {
+                            dto.Status = ClientStatus.Offline;
+                        }
+                    }
+                }
+                else
+                {
+                    // No real-time connections, rely on database status
+                    dto.IsOnline = c.Status >= ClientStatus.Idle && c.Status <= ClientStatus.InSession;
+
+                    // Update database status to Offline if it shows Online but no real connections exist
+                    if (dto.IsOnline)
+                    {
+                        dto.Status = ClientStatus.Offline;
+                        dto.IsOnline = false;
+                        _logger.LogInformation($"Client {c.Id} ({c.Name}) status corrected to Offline - no real-time connections");
+                    }
+                }
+
+                return dto;
             }).ToList();
 
+            _logger.LogInformation($"Returning {clientDtos.Count} client DTOs with enhanced visibility");
             return Ok(clientDtos);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting clients");
+            _logger.LogError(ex, "Error getting clients with enhanced visibility");
             return StatusCode(500, "Internal server error");
         }
     }
@@ -82,7 +157,7 @@ public class AdminController : ControllerBase
             };
 
             // Add online status
-            clientDto.IsOnline = client.Status >= ClientStatus.Online && client.Status <= ClientStatus.InSession;
+            clientDto.IsOnline = client.Status >= ClientStatus.Idle && client.Status <= ClientStatus.InSession;
 
             return Ok(clientDto);
         }
@@ -102,6 +177,11 @@ public class AdminController : ControllerBase
             var sessionService = scope.ServiceProvider.GetRequiredService<ISessionService>();
 
             var session = await sessionService.StartSessionAsync(request.ClientId, request.UserId, request.DurationMinutes);
+
+            // Update client status to Online when session starts (from Idle)
+            var clientService = scope.ServiceProvider.GetRequiredService<IClientService>();
+            await clientService.UpdateClientStatusAsync(request.ClientId, ClientStatus.Online);
+            _logger.LogInformation($"Client {request.ClientId} status updated to Online (session started)");
 
             // Notify all clients about the new session
             await _hubContext.Clients.All.SendAsync("LockWorkstation");
@@ -537,6 +617,77 @@ public class AdminController : ControllerBase
         {
             _logger.LogError(ex, $"Error receiving screenshot from client {clientId}");
             return StatusCode(500, "Internal server error");
+        }
+    }
+
+    [HttpGet("stats")]
+    public async Task<ActionResult<object>> GetStats()
+    {
+        try
+        {
+            using var scope = _serviceProvider.CreateScope();
+            var clientService = scope.ServiceProvider.GetRequiredService<IClientService>();
+            var sessionService = scope.ServiceProvider.GetRequiredService<ISessionService>();
+            var dbContext = scope.ServiceProvider.GetRequiredService<IApplicationDbContext>();
+
+            // Get total clients count
+            var totalClients = await dbContext.Clients.CountAsync();
+
+            // Get online clients
+            var onlineClients = await clientService.GetOnlineClientsAsync();
+
+            // Get active sessions
+            var activeSessions = await sessionService.GetActiveSessionsAsync();
+            var activeUsers = activeSessions.Count();
+
+            var stats = new
+            {
+                totalClients = totalClients,
+                activeUsers = activeUsers,
+                activeSessions = activeUsers,
+                onlineClients = onlineClients.Count()
+            };
+
+            return Ok(stats);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting admin stats");
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    [HttpGet("debug/clients")]
+    public async Task<ActionResult<object>> DebugClients()
+    {
+        try
+        {
+            using var scope = _serviceProvider.CreateScope();
+            var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+
+            // Get all clients to debug
+            var allClients = await unitOfWork.Clients.GetAllAsync();
+            var clientList = allClients.Select(c => new {
+                c.Id,
+                c.Name,
+                c.Status,
+                c.IPAddress,
+                c.MACAddress,
+                c.LastSeen,
+                c.CurrentSessionId
+            }).ToList();
+
+            _logger.LogInformation($"Debug: Found {clientList.Count} total clients in database");
+
+            return Ok(new {
+                TotalClients = clientList.Count,
+                Clients = clientList
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error debugging clients");
+            return StatusCode(500, $"Error: {ex.Message}");
         }
     }
 

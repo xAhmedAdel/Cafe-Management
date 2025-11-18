@@ -5,17 +5,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Title="Cafe Management - User Dashboard"
-        WindowStyle="{StaticResource LockScreenWindowStyle}"
-        AllowsTransparency="True"
-        Background="Transparent"
-        WindowStartupLocation="CenterScreen"
+        Background="#1E1E1E"
+        WindowStartupLocation="Manual"
         ShowInTaskbar="False"
         ResizeMode="NoResize"
-        SizeToContent="WidthAndHeight"
-        MinWidth="400"
-        MinHeight="600"
-        MaxWidth="400"
-        MaxHeight="600"
+        Width="400"
+        WindowStyle="None"
         Topmost="False">
 
     <Window.Resources>
@@ -34,30 +29,16 @@
         </Style>
     </Window.Resources>
 
-    <Border Background="#1E1E1E" CornerRadius="15" Margin="20">
-        <Border.Effect>
-            <DropShadowEffect BlurRadius="20" ShadowDepth="10" Opacity="0.4" Color="Black"/>
-        </Border.Effect>
+    <Grid>
 
-        <Grid Margin="30">
+        <Grid Margin="10">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!-- User Header -->
-            <StackPanel Grid.Row="0" Margin="0,0,0,25">
-                <TextBlock Text="👤" FontSize="32" HorizontalAlignment="Center" Margin="0,0,0,10"/>
-                <TextBlock Text="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=UserLoginViewModel.CurrentUserName, FallbackValue='User Name'}"
-                           FontSize="24"
-                           FontWeight="Bold"
-                           Foreground="White"
-                           HorizontalAlignment="Center"/>
-            </StackPanel>
-
             <!-- User Info Cards -->
-            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                 <StackPanel>
                     <!-- Account Balance -->
                     <Border Style="{StaticResource ModernCardStyle}">
@@ -152,18 +133,18 @@
             </ScrollViewer>
 
             <!-- Action Buttons -->
-            <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,15,0,0">
+            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,15,0,10">
                 <!-- Extend Session Button -->
                 <Button Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=UserLoginViewModel.ExtendSessionAsyncCommand}"
                         Height="45"
+                        Width="120"
                         FontSize="14"
                         FontWeight="Bold"
                         Background="#27AE60"
                         Foreground="White"
                         BorderThickness="0"
                         Cursor="Hand"
-                        Margin="0,0,10,0"
-                        Width="*">
+                        Margin="0,0,5,0">
                     <Button.Style>
                         <Style TargetType="Button">
                             <Setter Property="Template">
@@ -194,14 +175,14 @@
                 <!-- Logout Button -->
                 <Button Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=UserLoginViewModel.LogoutAsyncCommand}"
                         Height="45"
+                        Width="120"
                         FontSize="14"
                         FontWeight="Bold"
                         Background="#E74C3C"
                         Foreground="White"
                         BorderThickness="0"
                         Cursor="Hand"
-                        Margin="0,0,0,0"
-                        Width="*">
+                        Margin="5,0,5,0">
                     <Button.Style>
                         <Style TargetType="Button">
                             <Setter Property="Template">
@@ -232,13 +213,14 @@
                 <!-- Hide Button -->
                 <Button Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=UserLoginViewModel.HideToTrayCommand}"
                         Height="45"
+                        Width="120"
                         FontSize="14"
                         FontWeight="Bold"
                         Background="#95A5A6"
                         Foreground="White"
                         BorderThickness="0"
                         Cursor="Hand"
-                        Width="*">
+                        Margin="5,0,0,0">
                     <Button.Style>
                         <Style TargetType="Button">
                             <Setter Property="Template">
@@ -267,5 +249,5 @@
                 </Button>
             </StackPanel>
         </Grid>
-    </Border>
+    </Grid>
 </Window>

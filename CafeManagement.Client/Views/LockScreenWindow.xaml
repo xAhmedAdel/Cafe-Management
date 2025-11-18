@@ -11,8 +11,7 @@
         ResizeMode="NoResize"
         Topmost="True"
         Background="Black"
-        StateChanged="Window_StateChanged"
-        d:DesignHeight="1080" d:DesignWidth="1920">
+        StateChanged="Window_StateChanged">
 
     <Window.Resources>
         <local:BoolToColorConverter x:Key="BoolToColorConverter"/>
@@ -37,7 +36,7 @@
         <Storyboard x:Key="SlidePanelOut">
             <ThicknessAnimation Storyboard.TargetName="RightSlidePanel"
                                Storyboard.TargetProperty="Margin"
-                               To="0,0,-350,0"
+                               To="0,0,-400,0"
                                Duration="0:0:0.3">
                 <ThicknessAnimation.EasingFunction>
                     <CubicEase EasingMode="EaseInOut"/>
@@ -62,10 +61,10 @@
         <Border Name="RightSlidePanel"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Stretch"
-                Width="350"
+                Width="400"
                 Background="#2C3E50"
                 CornerRadius="10,0,0,10"
-                Margin="0,0,-350,0"
+                Margin="0,0,-400,0"
                 Visibility="{Binding IsUserLoggedIn, Converter={StaticResource BoolToVisibilityConverter}}">
             <Border.Effect>
                 <DropShadowEffect BlurRadius="15" ShadowDepth="5" Opacity="0.3" Color="Black"/>
@@ -317,7 +316,7 @@
                     Background="#FFFFFF"
                     Padding="40,30"
                     Margin="0,0,0,20"
-                    MaxWidth="400">
+                    MaxWidth="500">
                 <StackPanel DataContext="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=UserLoginViewModel}">
                     <TextBlock Text="🔐" FontSize="36" HorizontalAlignment="Center" Margin="0,0,0,15"/>
                     <TextBlock Text="User Login"
@@ -334,7 +333,7 @@
                                    FontWeight="SemiBold"
                                    Foreground="#34495E"
                                    Margin="0,0,0,5"/>
-                        <TextBox Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"
+                        <TextBox Text="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=UserLoginViewModel.Username, UpdateSourceTrigger=PropertyChanged}"
                                  Height="35"
                                  FontSize="14"
                                  Padding="10"
@@ -369,8 +368,8 @@
                                Visibility="{Binding StatusMessage, Converter={StaticResource StringToVisibilityConverter}}"/>
 
                     <!-- Login button -->
-                    <Button Command="{Binding LoginCommand}"
-                            IsEnabled="{Binding CanLogin}"
+                    <Button Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=UserLoginViewModel.LoginCommand}"
+                            IsEnabled="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=UserLoginViewModel.CanLogin}"
                             Height="40"
                             FontSize="14"
                             FontWeight="Bold"

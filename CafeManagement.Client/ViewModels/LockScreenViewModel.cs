@@ -98,40 +98,12 @@ public partial class LockScreenViewModel : ObservableObject
     {
         try
         {
+            // Clear any existing session display - start fresh
+            ClearSessionDisplay();
+            StatusMessage = "Computer locked by administrator";
+
             // Connect to SignalR
             await _signalRService.ConnectAsync();
-
-            // Get current session info from UserSessionService
-            if (_userSessionService.CurrentSession != null)
-            {
-                var userSession = _userSessionService.CurrentSession;
-                _sessionEndTime = userSession.EndTime ?? DateTime.UtcNow.AddMinutes(userSession.DurationMinutes);
-                _sessionStartTime = userSession.StartTime.ToString("yyyy-MM-dd HH:mm:ss");
-                _hourlyRate = userSession.HourlyRate;
-                _hasSessionInfo = true;
-
-                if (_sessionEndTime > DateTime.UtcNow)
-                {
-                    StartCountdown();
-                }
-            }
-            else
-            {
-                // Fallback to cafe service session
-                var currentSession = await _cafeService.GetCurrentSessionAsync();
-                if (currentSession != null)
-                {
-                    _sessionEndTime = currentSession.EndTime ?? DateTime.UtcNow.AddMinutes(currentSession.DurationMinutes);
-                    _sessionStartTime = currentSession.StartTime.ToString("yyyy-MM-dd HH:mm:ss");
-                    _hourlyRate = currentSession.HourlyRate;
-                    _hasSessionInfo = true;
-
-                    if (_sessionEndTime > DateTime.UtcNow)
-                    {
-                        StartCountdown();
-                    }
-                }
-            }
 
             // Register client with server
             await _cafeService.RegisterClientAsync();

@@ -15,6 +15,17 @@ public class ClientDto
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
     public bool IsOnline { get; set; }
+    public ConnectionDetailsDto? ConnectionDetails { get; set; }
+}
+
+public class ConnectionDetailsDto
+{
+    public string ConnectionId { get; set; } = string.Empty;
+    public DateTime ConnectedAt { get; set; }
+    public DateTime LastSeen { get; set; }
+    public bool IsActive { get; set; }
+    public string? IPAddress { get; set; }
+    public TimeSpan ConnectionDuration => DateTime.UtcNow - ConnectedAt;
 }
 
 public class CreateClientDto

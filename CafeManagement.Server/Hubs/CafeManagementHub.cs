@@ -1,7 +1,20 @@
 using CafeManagement.Application.DTOs;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
+using CafeManagement.Core.Interfaces;
+using CafeManagement.Core.Enums;
 
 namespace CafeManagement.Server.Hubs;
+
+public class ClientConnectionInfo
+{
+    public int ClientId { get; set; }
+    public string ConnectionId { get; set; } = string.Empty;
+    public DateTime ConnectedAt { get; set; }
+    public DateTime LastSeen { get; set; }
+    public string? IPAddress { get; set; }
+    public bool IsActive => DateTime.UtcNow.Subtract(LastSeen).TotalMinutes < 2;
+}
 
 public interface ICafeManagementHubClient
 {
@@ -26,12 +39,14 @@ public interface ICafeManagementHubClient
 public class CafeManagementHub : Hub<ICafeManagementHubClient>
 {
     private readonly ILogger<CafeManagementHub> _logger;
-    private static readonly Dictionary<string, int> _connectedClients = new();
-    private static readonly Dictionary<int, HashSet<string>> _clientConnections = new();
+    private readonly IServiceProvider _serviceProvider;
+    private static readonly Dictionary<string, ClientConnectionInfo> _connectionInfos = new();
+    private static readonly Dictionary<int, List<ClientConnectionInfo>> _clientConnections = new();
 
-    public CafeManagementHub(ILogger<CafeManagementHub> logger)
+    public CafeManagementHub(ILogger<CafeManagementHub> logger, IServiceProvider serviceProvider)
     {
         _logger = logger;
+        _serviceProvider = serviceProvider;
     }
 
     public override async Task OnConnectedAsync()
@@ -47,17 +62,67 @@ public class CafeManagementHub : Hub<ICafeManagementHubClient>
         var connectionId = Context.ConnectionId;
         _logger.LogInformation($"Client disconnected: {connectionId}");
 
-        // Remove from tracking
-        if (_connectedClients.TryGetValue(connectionId, out var clientId))
+        // Remove from enhanced tracking
+        if (_connectionInfos.TryGetValue(connectionId, out var connectionInfo))
         {
-            _connectedClients.Remove(connectionId);
+            var clientId = connectionInfo.ClientId;
+            _connectionInfos.Remove(connectionId);
 
             if (_clientConnections.TryGetValue(clientId, out var connections))
             {
-                connections.Remove(connectionId);
+                var removedConnection = connections.FirstOrDefault(c => c.ConnectionId == connectionId);
+                if (removedConnection != null)
+                {
+                    connections.Remove(removedConnection);
+                }
+
                 if (connections.Count == 0)
                 {
                     _clientConnections.Remove(clientId);
+
+                    // Update client status to offline in database
+                    try
+                    {
+                        using var scope = _serviceProvider.CreateScope();
+                        var clientService = scope.ServiceProvider.GetRequiredService<IClientService>();
+                        await clientService.UpdateClientStatusAsync(clientId, ClientStatus.Offline);
+
+                        _logger.LogInformation($"Client {clientId} status updated to Offline");
+
+                        // Get updated client data for notification
+                        var client = await clientService.GetClientByIdAsync(clientId);
+                        if (client != null)
+                        {
+                            var clientDto = new ClientDto
+                            {
+                                Id = client.Id,
+                                Name = client.Name,
+                                IPAddress = client.IPAddress,
+                                MACAddress = client.MACAddress,
+                                Status = client.Status,
+                                LastSeen = client.LastSeen,
+                                CurrentSessionId = client.CurrentSessionId,
+                                IsOnline = false,
+                                ConnectionDetails = new ConnectionDetailsDto
+                                {
+                                    ConnectionId = connectionId,
+                                    ConnectedAt = removedConnection?.ConnectedAt ?? DateTime.UtcNow,
+                                    LastSeen = DateTime.UtcNow,
+                                    IsActive = false,
+                                    IPAddress = removedConnection?.IPAddress
+                                }
+                            };
+
+                            // Notify all operators/admins about the status change
+                            await Clients.Group("Operators").ClientStatusUpdated(clientDto);
+                            await Clients.Group("Administrators").ClientStatusUpdated(clientDto);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, $"Error updating client {clientId} status to offline");
+                    }
+
                     // Notify other clients that this client is offline
                     await Clients.Others.ClientDisconnected(clientId);
                 }
@@ -70,19 +135,44 @@ public class CafeManagementHub : Hub<ICafeManagementHubClient>
     public async Task RegisterClient(int clientId)
     {
         var connectionId = Context.ConnectionId;
+        var httpContext = Context.GetHttpContext();
+        var clientIP = httpContext?.Connection?.RemoteIpAddress?.ToString() ?? "Unknown";
 
-        _connectedClients[connectionId] = clientId;
+        var connectionInfo = new ClientConnectionInfo
+        {
+            ClientId = clientId,
+            ConnectionId = connectionId,
+            ConnectedAt = DateTime.UtcNow,
+            LastSeen = DateTime.UtcNow,
+            IPAddress = clientIP
+        };
+
+        _connectionInfos[connectionId] = connectionInfo;
 
         if (!_clientConnections.ContainsKey(clientId))
         {
-            _clientConnections[clientId] = new HashSet<string>();
+            _clientConnections[clientId] = new List<ClientConnectionInfo>();
         }
-        _clientConnections[clientId].Add(connectionId);
+        _clientConnections[clientId].Add(connectionInfo);
 
         // Add this connection to a group for the client
         await Groups.AddToGroupAsync(connectionId, $"Client_{clientId}");
 
-        _logger.LogInformation($"Client {clientId} registered with connection {connectionId}");
+        // Update client status to idle in database (initial state after login)
+        try
+        {
+            using var scope = _serviceProvider.CreateScope();
+            var clientService = scope.ServiceProvider.GetRequiredService<IClientService>();
+            await clientService.UpdateClientStatusAsync(clientId, ClientStatus.Idle);
+
+            _logger.LogInformation($"Client {clientId} status updated to Idle");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error updating client {clientId} status to online");
+        }
+
+        _logger.LogInformation($"Client {clientId} registered with connection {connectionId} from IP {clientIP}");
     }
 
     public async Task JoinOperatorGroup()
@@ -154,7 +244,7 @@ public class CafeManagementHub : Hub<ICafeManagementHubClient>
 
     public async Task<ClientStatusDto[]> GetConnectedClients()
     {
-        // Return list of connected clients with their status
+        // Return list of connected clients with their status using enhanced tracking
         var connectedClients = _clientConnections.Keys
             .Select(clientId => new ClientStatusDto
             {
@@ -167,15 +257,43 @@ public class CafeManagementHub : Hub<ICafeManagementHubClient>
         return connectedClients;
     }
 
+    public async Task UpdateLastSeen()
+    {
+        var connectionId = Context.ConnectionId;
+
+        if (_connectionInfos.TryGetValue(connectionId, out var connectionInfo))
+        {
+            connectionInfo.LastSeen = DateTime.UtcNow;
+            _logger.LogDebug($"Updated last seen for connection {connectionId} (client {connectionInfo.ClientId})");
+        }
+    }
+
+    public Dictionary<int, List<ClientConnectionInfo>> GetAllConnectionInfos()
+    {
+        return _clientConnections;
+    }
+
+    public ClientConnectionInfo? GetConnectionInfo(int clientId)
+    {
+        if (_clientConnections.TryGetValue(clientId, out var connections))
+        {
+            return connections.FirstOrDefault(c => c.IsActive);
+        }
+        return null;
+    }
+
     // Screen sharing methods
     public async Task ReceiveScreenshot(byte[] imageData)
     {
         var connectionId = Context.ConnectionId;
         _logger.LogInformation($"🖼️ ReceiveScreenshot called from connection {connectionId}, data length: {imageData.Length} bytes");
 
-        // Find which client sent this screenshot
-        if (_connectedClients.TryGetValue(connectionId, out var clientId))
+        // Find which client sent this screenshot using enhanced tracking
+        if (_connectionInfos.TryGetValue(connectionId, out var connectionInfo))
         {
+            var clientId = connectionInfo.ClientId;
+            connectionInfo.LastSeen = DateTime.UtcNow; // Update activity
+
             _logger.LogInformation($"📤 Broadcasting screenshot from client {clientId} ({imageData.Length} bytes) to Operators and Administrators groups");
 
             // Broadcast screenshot to all connected operators
@@ -186,7 +304,7 @@ public class CafeManagementHub : Hub<ICafeManagementHubClient>
         }
         else
         {
-            _logger.LogWarning($"❌ Could not find client ID for connection {connectionId}");
+            _logger.LogWarning($"❌ Could not find client connection info for connection {connectionId}");
         }
     }
 
@@ -194,8 +312,11 @@ public class CafeManagementHub : Hub<ICafeManagementHubClient>
     {
         var connectionId = Context.ConnectionId;
 
-        if (_connectedClients.TryGetValue(connectionId, out var clientId))
+        if (_connectionInfos.TryGetValue(connectionId, out var connectionInfo))
         {
+            var clientId = connectionInfo.ClientId;
+            connectionInfo.LastSeen = DateTime.UtcNow; // Update activity
+
             // Notify all operators that remote control has started
             await Clients.Group("Operators").SystemMessage($"Remote control started for client {clientId}");
             await Clients.Group("Administrators").SystemMessage($"Remote control started for client {clientId}");
@@ -208,8 +329,11 @@ public class CafeManagementHub : Hub<ICafeManagementHubClient>
     {
         var connectionId = Context.ConnectionId;
 
-        if (_connectedClients.TryGetValue(connectionId, out var clientId))
+        if (_connectionInfos.TryGetValue(connectionId, out var connectionInfo))
         {
+            var clientId = connectionInfo.ClientId;
+            connectionInfo.LastSeen = DateTime.UtcNow; // Update activity
+
             // Notify all operators that remote control has stopped
             await Clients.Group("Operators").SystemMessage($"Remote control stopped for client {clientId}");
             await Clients.Group("Administrators").SystemMessage($"Remote control stopped for client {clientId}");
@@ -223,8 +347,11 @@ public class CafeManagementHub : Hub<ICafeManagementHubClient>
         var connectionId = Context.ConnectionId;
 
         // Forward the remote command to the specified client
-        if (_connectedClients.TryGetValue(connectionId, out var clientId))
+        if (_connectionInfos.TryGetValue(connectionId, out var connectionInfo))
         {
+            var clientId = connectionInfo.ClientId;
+            connectionInfo.LastSeen = DateTime.UtcNow; // Update activity
+
             // Send command to specific client
             await Clients.Group($"Client_{clientId}").ReceiveRemoteCommand(System.Text.Encoding.UTF8.GetBytes($"{command}:{string.Join(",", parameters)}"));
 
@@ -237,8 +364,11 @@ public class CafeManagementHub : Hub<ICafeManagementHubClient>
     {
         var connectionId = Context.ConnectionId;
 
-        if (_connectedClients.TryGetValue(connectionId, out var clientId))
+        if (_connectionInfos.TryGetValue(connectionId, out var connectionInfo))
         {
+            var clientId = connectionInfo.ClientId;
+            connectionInfo.LastSeen = DateTime.UtcNow; // Update activity
+
             // Notify operators that unlock is requested
             await Clients.Group("Operators").SystemMessage($"Client {clientId} is requesting unlock");
 
