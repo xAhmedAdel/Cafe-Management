@@ -23,6 +23,11 @@ public static class DependencyInjection
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
         services.AddScoped<IDeploymentService, DeploymentService>();
 
+        // Ordering System Services
+        services.AddScoped<IProductService, ProductService>();
+        services.AddScoped<IOrderService, OrderService>();
+        services.AddScoped<IOrderNotificationService, OrderNotificationService>();
+
         return services;
     }
 }

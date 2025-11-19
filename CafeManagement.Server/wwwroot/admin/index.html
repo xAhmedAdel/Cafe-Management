@@ -162,6 +162,23 @@
             transition: var(--transition);
         }
 
+        /* Content Sections */
+        .content-section {
+            display: none;
+            flex: 1;
+            padding: 2rem;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         /* Header */
         .header {
             height: var(--header-height);
@@ -494,6 +511,159 @@
             padding: 1rem;
         }
 
+        /* Products Grid */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .product-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            overflow: hidden;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            background: var(--bg-secondary);
+            transition: transform 0.3s ease;
+        }
+
+        .product-image:hover {
+            transform: scale(1.05);
+        }
+
+        .product-image[src*="unsplash"] {
+            filter: brightness(0.95);
+        }
+
+        .product-image:not([src]), .product-image[src=""], .product-image[src$="bg=f59e0b"] {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .product-content {
+            padding: 1rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-header {
+            display: flex;
+            align-items: start;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
+
+        .product-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 1rem;
+            flex: 1;
+            margin-right: 0.5rem;
+        }
+
+        .product-price {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            white-space: nowrap;
+        }
+
+        .product-category {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .product-category.drinks {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .product-category.food {
+            background: #f97316;
+            color: white;
+        }
+
+        .product-category.snacks {
+            background: #22c55e;
+            color: white;
+        }
+
+        .product-description {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 1rem;
+            flex: 1;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .product-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+        }
+
+        .product-status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .product-status.available {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .product-status.unavailable {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .product-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .product-actions .btn {
+            flex: 1;
+            justify-content: center;
+            font-size: 0.75rem;
+            padding: 0.5rem 0.75rem;
+        }
+
         .client-card {
             background: var(--bg-tertiary);
             border: 1px solid var(--border-color);
@@ -544,6 +714,21 @@
             color: white;
         }
 
+        .client-status.idle {
+            background: var(--info-color);
+            color: white;
+        }
+
+        .client-status.in-session {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .client-status.locked {
+            background: var(--danger-color);
+            color: white;
+        }
+
         .client-info {
             margin-bottom: 1rem;
             font-size: 0.875rem;
@@ -580,6 +765,84 @@
 
         .sessions-table tr:hover {
             background: var(--bg-tertiary);
+        }
+
+        /* Orders Table */
+        .orders-table {
+            width: 100%;
+            margin-top: 1rem;
+            border-collapse: collapse;
+        }
+
+        .orders-table th,
+        .orders-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .orders-table th {
+            background: var(--bg-tertiary);
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .orders-table tr:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .order-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+            white-space: nowrap;
+        }
+
+        .order-status.pending {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .order-status.preparing {
+            background: var(--info-color);
+            color: white;
+        }
+
+        .order-status.ready {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .order-status.completed {
+            background: var(--text-tertiary);
+            color: white;
+        }
+
+        .order-status.cancelled {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        /* Order Stat Cards */
+        .stat-card.pending {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        }
+
+        .stat-card.preparing {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        }
+
+        .stat-card.ready {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+        }
+
+        .stat-card.completed {
+            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
         }
 
         /* Mobile Responsive */
@@ -718,6 +981,162 @@
                 transform: translateX(0);
             }
         }
+
+        /* Toast Notifications */
+        .toast-notification {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 10000;
+            min-width: 300px;
+            max-width: 400px;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            animation: slideInRight 0.3s ease-out;
+            border-left: 4px solid;
+        }
+
+        .toast-order {
+            min-width: 350px;
+            max-width: 450px;
+            border-left-width: 6px;
+        }
+
+        .toast-notification.toast-success {
+            background: #10b981;
+            color: white;
+            border-left-color: #059669;
+        }
+
+        .toast-notification.toast-error {
+            background: #ef4444;
+            color: white;
+            border-left-color: #dc2626;
+        }
+
+        .toast-notification.toast-warning {
+            background: #f59e0b;
+            color: white;
+            border-left-color: #d97706;
+        }
+
+        .toast-notification.toast-info {
+            background: #3b82f6;
+            color: white;
+            border-left-color: #2563eb;
+        }
+
+        .toast-notification.toast-new {
+            background: #10b981;
+            color: white;
+            border-left-color: #059669;
+        }
+
+        .toast-notification.toast-ready {
+            background: #f59e0b;
+            color: white;
+            border-left-color: #d97706;
+        }
+
+        .toast-notification.toast-cancelled {
+            background: #ef4444;
+            color: white;
+            border-left-color: #dc2626;
+        }
+
+        .toast-content {
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .toast-order .toast-content {
+            padding: 0;
+        }
+
+        .toast-header {
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .toast-body {
+            padding: 0.75rem 1rem;
+            background: rgba(0, 0, 0, 0.1);
+            border-bottom-left-radius: 0.5rem;
+            border-bottom-right-radius: 0.5rem;
+        }
+
+        .toast-content i {
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .toast-content span {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .toast-header strong {
+            flex: 1;
+            font-weight: 600;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: inherit;
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: 0.25rem;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+
+        .toast-close:hover {
+            opacity: 1;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+        }
+
+        /* Responsive adjustments for toasts */
+        @media (max-width: 768px) {
+            .toast-notification {
+                right: 0.5rem;
+                left: 0.5rem;
+                min-width: auto;
+                max-width: none;
+            }
+
+            .toast-order {
+                min-width: auto;
+                max-width: none;
+            }
+        }
     </style>
 </head>
 <body data-theme="light">
@@ -733,16 +1152,16 @@
 
             <nav class="nav-section">
                 <div class="nav-section-title">Main</div>
-                <a href="#" class="nav-item active" onclick="showSection('dashboard')">
+                <a href="javascript:void(0)" class="nav-item active" onclick="showSection('dashboard')">
                     <i class="fas fa-tachometer-alt"></i>
                     <span>Dashboard</span>
                 </a>
-                <a href="#" class="nav-item" onclick="showSection('clients')">
+                <a href="javascript:void(0)" class="nav-item" onclick="showSection('clients')">
                     <i class="fas fa-desktop"></i>
                     <span>Clients</span>
                     <span class="badge" id="onlineClients">0</span>
                 </a>
-                <a href="#" class="nav-item" onclick="showSection('sessions')">
+                <a href="javascript:void(0)" class="nav-item" onclick="showSection('sessions')">
                     <i class="fas fa-clock"></i>
                     <span>Sessions</span>
                 </a>
@@ -750,6 +1169,14 @@
 
             <nav class="nav-section">
                 <div class="nav-section-title">Management</div>
+                <a href="javascript:void(0)" class="nav-item" onclick="showSection('products')">
+                    <i class="fas fa-utensils"></i>
+                    <span>Products</span>
+                </a>
+                <a href="javascript:void(0)" class="nav-item" onclick="showSection('orders')">
+                    <i class="fas fa-receipt"></i>
+                    <span>Orders</span>
+                </a>
                 <a href="/admin/user-management.html" class="nav-item">
                     <i class="fas fa-users"></i>
                     <span>Users</span>
@@ -766,11 +1193,11 @@
 
             <nav class="nav-section">
                 <div class="nav-section-title">Control</div>
-                <a href="/admin/view-screen.html" class="nav-item">
+                <a href="javascript:void(0)" class="nav-item" onclick="showNotification('Please select a client from the Clients section first', 'info'); showSection('clients')">
                     <i class="fas fa-desktop"></i>
                     <span>View Screen</span>
                 </a>
-                <a href="/admin/remote-control.html" class="nav-item">
+                <a href="javascript:void(0)" class="nav-item" onclick="showNotification('Please select a client from the Clients section first', 'info'); showSection('clients')">
                     <i class="fas fa-gamepad"></i>
                     <span>Remote Control</span>
                 </a>
@@ -825,8 +1252,8 @@
                 </div>
             </header>
 
-            <!-- Dashboard Content -->
-            <div class="dashboard-content">
+            <!-- Dashboard Section -->
+            <div id="dashboard-section" class="content-section active">
                 <h1 class="page-title">Dashboard</h1>
 
                 <!-- Stats Cards -->
@@ -888,7 +1315,7 @@
                     </div>
                 </div>
 
-                <!-- Main Grid -->
+                <!-- Main Grid (Dashboard Preview) -->
                 <div class="main-grid">
                     <!-- Clients Section -->
                     <div class="card">
@@ -960,26 +1387,414 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Clients Section -->
+            <div id="clients-section" class="content-section" style="display: none;">
+                <h1 class="page-title">Client Management</h1>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fas fa-desktop"></i>
+                            All Clients
+                        </h2>
+                        <div class="card-actions">
+                            <button class="btn btn-sm" onclick="refreshClients()">
+                                <i class="fas fa-sync-alt"></i>
+                                Refresh
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="clients-grid" id="clientsListFull">
+                            <div class="text-center text-muted mb-3">
+                                <div class="loading"></div>
+                                <p>Loading clients...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Products Section -->
+            <div id="products-section" class="content-section" style="display: none;">
+                <h1 class="page-title">Product Management</h1>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fas fa-utensils"></i>
+                            Menu Products
+                        </h2>
+                        <div class="card-actions">
+                            <button class="btn btn-sm" onclick="refreshProducts()">
+                                <i class="fas fa-sync-alt"></i>
+                                Refresh
+                            </button>
+                            <button class="btn btn-primary btn-sm" onclick="showAddProductModal()">
+                                <i class="fas fa-plus"></i>
+                                Add Product
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Search and Filter Bar -->
+                        <div style="margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: center;">
+                            <div style="flex: 1; position: relative;">
+                                <i class="fas fa-search" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-tertiary);"></i>
+                                <input type="text" id="productSearch" placeholder="Search products..."
+                                    style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; border: 1px solid var(--border-color); border-radius: 0.5rem; background: var(--bg-primary); color: var(--text-primary);">
+                            </div>
+                            <select id="categoryFilter" style="padding: 0.75rem 1rem; border: 1px solid var(--border-color); border-radius: 0.5rem; background: var(--bg-primary); color: var(--text-primary);">
+                                <option value="">All Categories</option>
+                                <option value="0">Drinks</option>
+                                <option value="1">Food</option>
+                                <option value="2">Snacks</option>
+                            </select>
+                            <select id="availabilityFilter" style="padding: 0.75rem 1rem; border: 1px solid var(--border-color); border-radius: 0.5rem; background: var(--bg-primary); color: var(--text-primary);">
+                                <option value="">All Products</option>
+                                <option value="true">Available</option>
+                                <option value="false">Unavailable</option>
+                            </select>
+                        </div>
+
+                        <!-- Products Grid -->
+                        <div class="products-grid" id="productsList">
+                            <div class="text-center text-muted mb-3">
+                                <div class="loading"></div>
+                                <p>Loading products...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Orders Section -->
+            <div id="orders-section" class="content-section" style="display: none;">
+                <h1 class="page-title">Order Management</h1>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fas fa-receipt"></i>
+                            Client Orders
+                        </h2>
+                        <div class="card-actions">
+                            <button class="btn btn-sm" onclick="refreshOrders()">
+                                <i class="fas fa-sync-alt"></i>
+                                Refresh
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Orders Stats -->
+                        <div class="stats-grid">
+                            <div class="stat-card pending">
+                                <div class="stat-icon">🕐</div>
+                                <div class="stat-content">
+                                    <div class="stat-number" id="pendingOrdersCount">0</div>
+                                    <div class="stat-label">Pending</div>
+                                </div>
+                            </div>
+                            <div class="stat-card preparing">
+                                <div class="stat-icon">👨‍🍳</div>
+                                <div class="stat-content">
+                                    <div class="stat-number" id="preparingOrdersCount">0</div>
+                                    <div class="stat-label">Preparing</div>
+                                </div>
+                            </div>
+                            <div class="stat-card ready">
+                                <div class="stat-icon">✅</div>
+                                <div class="stat-content">
+                                    <div class="stat-number" id="readyOrdersCount">0</div>
+                                    <div class="stat-label">Ready</div>
+                                </div>
+                            </div>
+                            <div class="stat-card completed">
+                                <div class="stat-icon">✨</div>
+                                <div class="stat-content">
+                                    <div class="stat-number" id="completedOrdersCount">0</div>
+                                    <div class="stat-label">Completed</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Orders Table -->
+                        <div class="table-container">
+                            <table class="orders-table">
+                                <thead>
+                                    <tr>
+                                        <th>Order ID</th>
+                                        <th>Customer</th>
+                                        <th>Items</th>
+                                        <th>Total</th>
+                                        <th>Status</th>
+                                        <th>Time</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ordersList">
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted">
+                                            <div class="loading"></div>
+                                            Loading orders...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sessions Section -->
+            <div id="sessions-section" class="content-section" style="display: none;">
+                <h1 class="page-title">Session Management</h1>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fas fa-clock"></i>
+                            All Sessions
+                        </h2>
+                        <div class="card-actions">
+                            <button class="btn btn-sm" onclick="refreshSessions()">
+                                <i class="fas fa-sync-alt"></i>
+                                Refresh
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <table class="sessions-table" id="sessionsTableFull">
+                            <thead>
+                                <tr>
+                                    <th>Client</th>
+                                    <th>User</th>
+                                    <th>Start Time</th>
+                                    <th>Duration</th>
+                                    <th>Cost</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sessionsListFull">
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted">
+                                        <div class="loading"></div>
+                                        Loading sessions...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </main>
     </div>
+
+    <!-- Product Modal -->
+    <div id="productModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; align-items: center; justify-content: center;">
+        <div style="background: var(--bg-primary); border-radius: 1rem; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; margin: 1rem;">
+            <div style="padding: 2rem;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+                    <h2 style="margin: 0; color: var(--text-primary);" id="productModalTitle">Add Product</h2>
+                    <button class="btn" onclick="closeProductModal()" style="padding: 0.5rem;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <form id="productForm">
+                    <div style="display: grid; gap: 1rem;">
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-weight: 500;">Product Name</label>
+                            <input type="text" id="productName" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 0.5rem; background: var(--bg-secondary); color: var(--text-primary);">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-weight: 500;">Description</label>
+                            <textarea id="productDescription" rows="3" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 0.5rem; background: var(--bg-secondary); color: var(--text-primary); resize: vertical;"></textarea>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-weight: 500;">Category</label>
+                                <select id="productCategory" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 0.5rem; background: var(--bg-secondary); color: var(--text-primary);">
+                                    <option value="0">Drinks</option>
+                                    <option value="1">Food</option>
+                                    <option value="2">Snacks</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-weight: 500;">Price</label>
+                                <input type="number" id="productPrice" step="0.01" min="0" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 0.5rem; background: var(--bg-secondary); color: var(--text-primary);">
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-weight: 500;">Preparation Time (minutes)</label>
+                                <input type="number" id="productPrepTime" min="0" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 0.5rem; background: var(--bg-secondary); color: var(--text-primary);">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-weight: 500;">Display Order</label>
+                                <input type="number" id="productDisplayOrder" min="0" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 0.5rem; background: var(--bg-secondary); color: var(--text-primary);">
+                            </div>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-weight: 500;">Image URL</label>
+                            <input type="text" id="productImageUrl" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 0.5rem; background: var(--bg-secondary); color: var(--text-primary);">
+                        </div>
+                        <div>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="checkbox" id="productIsAvailable" style="width: auto;">
+                                <span style="color: var(--text-secondary);">Product is Available</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
+                        <button type="button" class="btn" onclick="closeProductModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="productSubmitBtn">Add Product</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- SignalR Client Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
 
     <script>
         // Global variables
         let currentSection = 'dashboard';
         let isDarkMode = false;
+        let connection = null;
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             initializeTheme();
+            setupCrossTabThemeSync();
+            initializeSignalR();
             loadData();
             setupEventListeners();
             startAutoRefresh();
         });
 
+        // Event Listeners
+        function setupEventListeners() {
+            // Mobile menu toggle
+            document.addEventListener('click', function(e) {
+                if (window.innerWidth <= 768 &&
+                    !e.target.closest('.sidebar') &&
+                    !e.target.closest('.mobile-menu-toggle')) {
+                    document.getElementById('sidebar').classList.remove('auto');
+                }
+            });
+
+            // Window resize
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 768) {
+                    document.getElementById('sidebar').classList.remove('active');
+                }
+            });
+
+            // Product form submission
+            const productForm = document.getElementById('productForm');
+            if (productForm) {
+                productForm.addEventListener('submit', saveProduct);
+            }
+
+            // Product search and filter
+            const productSearch = document.getElementById('productSearch');
+            const categoryFilter = document.getElementById('categoryFilter');
+            const availabilityFilter = document.getElementById('availabilityFilter');
+
+            if (productSearch) {
+                productSearch.addEventListener('input', filterProducts);
+            }
+            if (categoryFilter) {
+                categoryFilter.addEventListener('change', filterProducts);
+            }
+            if (availabilityFilter) {
+                availabilityFilter.addEventListener('change', filterProducts);
+            }
+        }
+
+        // Filter products function
+        function filterProducts() {
+            const searchTerm = document.getElementById('productSearch').value.toLowerCase();
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            const availabilityFilter = document.getElementById('availabilityFilter').value;
+
+            // This is a simple client-side filter - for production, you might want to call the API with filters
+            loadProducts().then(() => {
+                const productCards = document.querySelectorAll('.product-card');
+                productCards.forEach(card => {
+                    const productId = parseInt(card.querySelector('[onclick^="editProduct"]').getAttribute('onclick').match(/\d+/)[0]);
+                    const product = getProductDataFromCard(card);
+
+                    let show = true;
+
+                    if (searchTerm && !product.name.toLowerCase().includes(searchTerm) &&
+                        !product.description.toLowerCase().includes(searchTerm)) {
+                        show = false;
+                    }
+
+                    if (categoryFilter && product.category.toString() !== categoryFilter) {
+                        show = false;
+                    }
+
+                    if (availabilityFilter && product.isAvailable.toString() !== availabilityFilter) {
+                        show = false;
+                    }
+
+                    card.style.display = show ? 'block' : 'none';
+                });
+            });
+        }
+
+        // Helper function to extract product data from card
+        function getProductDataFromCard(card) {
+            const name = card.querySelector('.product-name')?.textContent || '';
+            const description = card.querySelector('.product-description')?.textContent || '';
+            const priceText = card.querySelector('.product-price')?.textContent || '$0';
+            const price = parseFloat(priceText.replace('$', ''));
+            const categoryText = card.querySelector('.product-category')?.textContent || '';
+            const category = categoryText === 'Drinks' ? 0 : categoryText === 'Food' ? 1 : 2;
+            const prepTimeText = card.querySelector('.product-meta span:first-child')?.textContent || '0 min';
+            const prepTimeMinutes = parseInt(prepTimeText.replace(' min', ''));
+            const statusText = card.querySelector('.product-status')?.textContent || 'Available';
+            const isAvailable = statusText === 'Available';
+
+            return { name, description, price, category, preparationTimeMinutes, isAvailable };
+        }
+
         // Theme Management
         function initializeTheme() {
-            const savedTheme = localStorage.getItem('admin-theme') || 'light';
+            const savedTheme = localStorage.getItem('theme') || 'light';
             setTheme(savedTheme);
+        }
+
+        // Cross-tab theme synchronization
+        function setupCrossTabThemeSync() {
+            // Listen for storage changes from other tabs
+            window.addEventListener('storage', function(e) {
+                if (e.key === 'theme' && e.newValue !== null) {
+                    setTheme(e.newValue);
+                }
+            });
+
+            // Use a custom event for same-tab communication
+            window.addEventListener('themeChanged', function(e) {
+                if (e.detail && e.detail.theme) {
+                    // Apply theme immediately for same-tab events
+                    applyTheme(e.detail.theme);
+                }
+            });
+        }
+
+        function applyTheme(theme) {
+            isDarkMode = theme === 'dark';
+            document.body.setAttribute('data-theme', theme);
+            const icon = document.getElementById('theme-icon');
+            if (icon) {
+                icon.className = isDarkMode ? 'fas fa-sun' : 'fas fa-moon';
+            }
         }
 
         function setTheme(theme) {
@@ -987,7 +1802,137 @@
             document.body.setAttribute('data-theme', theme);
             const icon = document.getElementById('theme-icon');
             icon.className = isDarkMode ? 'fas fa-sun' : 'fas fa-moon';
-            localStorage.setItem('admin-theme', theme);
+            localStorage.setItem('theme', theme);
+
+            // Notify other admin pages of theme change
+            window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme } }));
+        }
+
+        // SignalR Connection
+        function initializeSignalR() {
+            connection = new signalR.HubConnectionBuilder()
+                .withUrl('/cafeHub')
+                .withAutomaticReconnect()
+                .build();
+
+            // Listen for client status updates
+            connection.on("ClientStatusUpdated", function (client) {
+                console.log('Client status updated:', client);
+                // Update the client in the UI
+                updateClientInList(client);
+                // Refresh stats to update online count
+                loadStats();
+            });
+
+            // Listen for client disconnections
+            connection.on("ClientDisconnected", function (clientId) {
+                console.log('Client disconnected:', clientId);
+                // Refresh clients list and stats
+                loadClients();
+                loadStats();
+            });
+
+            // Listen for order notifications
+            connection.on("NewOrderReceived", function (order) {
+                console.log('New order received:', order);
+                showOrderNotification(order, 'new');
+                // Play notification sound
+                playNotificationSound();
+                // Update orders list if visible
+                if (currentSection === 'orders') {
+                    loadOrders();
+                }
+                // Update stats
+                loadStats();
+            });
+
+            connection.on("OrderStatusUpdated", function (order) {
+                console.log('Order status updated:', order);
+                showOrderNotification(order, 'status');
+                // Update orders list if visible
+                if (currentSection === 'orders') {
+                    loadOrders();
+                }
+            });
+
+            connection.on("OrderReadyForPickup", function (order) {
+                console.log('Order ready for pickup:', order);
+                showOrderNotification(order, 'ready');
+                // Play notification sound
+                playNotificationSound();
+                // Update orders list if visible
+                if (currentSection === 'orders') {
+                    loadOrders();
+                }
+            });
+
+            connection.on("OrderCancelled", function (order) {
+                console.log('Order cancelled:', order);
+                showOrderNotification(order, 'cancelled');
+                // Update orders list if visible
+                if (currentSection === 'orders') {
+                    loadOrders();
+                }
+                // Update stats
+                loadStats();
+            });
+
+            // Start the connection
+            connection.start()
+                .then(function () {
+                    console.log('SignalR connected successfully');
+                    // Join admin group to receive updates
+                    connection.invoke("JoinAdminGroup")
+                        .catch(function (err) {
+                            console.error('Error joining admin group:', err);
+                        });
+                })
+                .catch(function (err) {
+                    console.error('Error starting SignalR connection:', err);
+                });
+        }
+
+        // Update client in the list without full refresh
+        function updateClientInList(updatedClient) {
+            // Determine status based on client.status value
+            let statusClass, statusText;
+            switch(updatedClient.status) {
+                case 1: // Idle
+                    statusClass = 'idle';
+                    statusText = 'Idle';
+                    break;
+                case 2: // Online
+                    statusClass = 'online';
+                    statusText = 'Online';
+                    break;
+                case 3: // InSession
+                    statusClass = 'in-session';
+                    statusText = 'In Session';
+                    break;
+                case 4: // Locked
+                    statusClass = 'locked';
+                    statusText = 'Locked';
+                    break;
+                default: // Offline
+                    statusClass = 'offline';
+                    statusText = 'Offline';
+            }
+
+            // Update dashboard clients list
+            const clientCard = document.querySelector(`#clientsList [data-client-id="${updatedClient.id}"]`);
+            if (clientCard) {
+                const statusElement = clientCard.querySelector('.client-status');
+                statusElement.className = `client-status ${statusClass}`;
+                statusElement.textContent = statusText;
+            }
+
+            // Update full clients list
+            const clientCardFull = document.querySelector(`#clientsListFull [data-client-id="${updatedClient.id}"]`);
+            if (clientCardFull) {
+                const statusElement = clientCardFull.querySelector('.client-status');
+                statusElement.className = `client-status ${statusClass}`;
+                statusElement.textContent = statusText;
+            }
         }
 
         function toggleTheme() {
@@ -1001,21 +1946,35 @@
         }
 
         function showSection(section) {
+            // Prevent default anchor behavior
+            if (event) {
+                event.preventDefault();
+            }
+
             // Update navigation
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.classList.remove('active');
             });
 
-            event.target.closest('.nav-item').classList.add('active');
+            // Find the clicked nav item
+            const clickedNav = document.querySelector(`[onclick="showSection('${section}')"]`);
+            if (clickedNav) {
+                clickedNav.classList.add('active');
+            }
 
-            // Update page title
-            const titles = {
-                'dashboard': 'Dashboard',
-                'clients': 'Client Management',
-                'sessions': 'Session Management'
-            };
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(sec => {
+                sec.classList.remove('active');
+                sec.style.display = 'none';
+            });
 
-            document.querySelector('.page-title').textContent = titles[section] || 'Dashboard';
+            // Show selected section
+            const targetSection = document.getElementById(`${section}-section`);
+            if (targetSection) {
+                targetSection.classList.add('active');
+                targetSection.style.display = 'block';
+            }
+
             currentSection = section;
 
             // Close mobile sidebar
@@ -1028,6 +1987,8 @@
                 loadClients();
             } else if (section === 'sessions') {
                 loadSessions();
+            } else if (section === 'products') {
+                loadProducts();
             } else {
                 loadData();
             }
@@ -1038,6 +1999,300 @@
             loadStats();
             loadClients();
             loadSessions();
+        }
+
+        async function loadProducts() {
+            const productsList = document.getElementById('productsList');
+
+            try {
+                const response = await fetch('/api/products/admin');
+                const products = await response.json();
+
+                const productsHtml = products.length === 0 ? `
+                    <div class="text-center text-muted" style="grid-column: 1/-1;">
+                        <i class="fas fa-utensils" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                        <p>No products found</p>
+                    </div>
+                ` : products.map(product => {
+                    const categoryClass = product.category === 0 ? 'drinks' : product.category === 1 ? 'food' : 'snacks';
+                    const categoryName = product.category === 0 ? 'Drinks' : product.category === 1 ? 'Food' : 'Snacks';
+                    const statusClass = product.isAvailable ? 'available' : 'unavailable';
+                    const statusText = product.isAvailable ? 'Available' : 'Unavailable';
+                    const imageUrl = product.imageUrl || `https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=280&h=180&fit=crop&crop=center&auto=format&bg=f59e0b`;
+
+                    return `
+                    <div class="product-card">
+                        <img src="${imageUrl}" alt="${product.name}" class="product-image"
+                             onerror="this.src='https://via.placeholder.com/280x180/f59e0b/ffffff?text=${encodeURIComponent(product.name)}'">
+                        <div class="product-content">
+                            <div class="product-header">
+                                <div class="product-name">${product.name}</div>
+                                <div class="product-price">${product.price.toFixed(2)} L.E</div>
+                            </div>
+                            <div class="product-category ${categoryClass}">${categoryName}</div>
+                            <div class="product-description">${product.description || 'No description available'}</div>
+                            <div class="product-meta">
+                                <span><i class="fas fa-clock"></i> ${product.preparationTimeMinutes} min</span>
+                                <span class="product-status ${statusClass}">${statusText}</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-sm" onclick="editProduct(${product.id})">
+                                    <i class="fas fa-edit"></i>
+                                    Edit
+                                </button>
+                                <button class="btn btn-sm ${product.isAvailable ? 'btn-danger' : 'btn-success'}"
+                                        onclick="toggleProductAvailability(${product.id})">
+                                    <i class="fas fa-${product.isAvailable ? 'times' : 'check'}"></i>
+                                    ${product.isAvailable ? 'Disable' : 'Enable'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                }).join('');
+
+                if (productsList) productsList.innerHTML = productsHtml;
+
+            } catch (error) {
+                const errorHtml = `
+                    <div class="text-center text-danger" style="grid-column: 1/-1;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                        <p>Error loading products</p>
+                    </div>
+                `;
+
+                if (productsList) productsList.innerHTML = errorHtml;
+            }
+        }
+
+        // Product Modal Functions
+        let currentProductId = null;
+
+        function showAddProductModal() {
+            currentProductId = null;
+            document.getElementById('productModalTitle').textContent = 'Add Product';
+            document.getElementById('productSubmitBtn').textContent = 'Add Product';
+            document.getElementById('productForm').reset();
+            document.getElementById('productModal').style.display = 'flex';
+        }
+
+        async function editProduct(productId) {
+            currentProductId = productId;
+            document.getElementById('productModalTitle').textContent = 'Edit Product';
+            document.getElementById('productSubmitBtn').textContent = 'Update Product';
+
+            try {
+                const response = await fetch(`/api/products/${productId}`);
+                const product = await response.json();
+
+                // Populate form with product data
+                document.getElementById('productName').value = product.name;
+                document.getElementById('productDescription').value = product.description || '';
+                document.getElementById('productCategory').value = product.category;
+                document.getElementById('productPrice').value = product.price;
+                document.getElementById('productPrepTime').value = product.preparationTimeMinutes;
+                document.getElementById('productDisplayOrder').value = product.displayOrder;
+                document.getElementById('productImageUrl').value = product.imageUrl || '';
+                document.getElementById('productIsAvailable').checked = product.isAvailable;
+
+                document.getElementById('productModal').style.display = 'flex';
+            } catch (error) {
+                showNotification('Error loading product details', 'error');
+            }
+        }
+
+        function closeProductModal() {
+            document.getElementById('productModal').style.display = 'none';
+            document.getElementById('productForm').reset();
+            currentProductId = null;
+        }
+
+        async function saveProduct(event) {
+            event.preventDefault();
+
+            const productData = {
+                name: document.getElementById('productName').value,
+                description: document.getElementById('productDescription').value,
+                category: parseInt(document.getElementById('productCategory').value),
+                price: parseFloat(document.getElementById('productPrice').value),
+                preparationTimeMinutes: parseInt(document.getElementById('productPrepTime').value),
+                displayOrder: parseInt(document.getElementById('productDisplayOrder').value) || 0,
+                imageUrl: document.getElementById('productImageUrl').value || null,
+                isAvailable: document.getElementById('productIsAvailable').checked
+            };
+
+            try {
+                const url = currentProductId ? `/api/products/${currentProductId}` : '/api/products';
+                const method = currentProductId ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(productData)
+                });
+
+                if (response.ok) {
+                    showNotification(`Product ${currentProductId ? 'updated' : 'added'} successfully`, 'success');
+                    closeProductModal();
+                    loadProducts();
+                } else {
+                    const error = await response.text();
+                    showNotification(`Error ${currentProductId ? 'updating' : 'adding'} product: ${error}`, 'error');
+                }
+            } catch (error) {
+                showNotification(`Error ${currentProductId ? 'updating' : 'adding'} product`, 'error');
+            }
+        }
+
+        async function toggleProductAvailability(productId) {
+            try {
+                const product = allProducts.find(p => p.id === productId);
+                const newAvailability = !product.isAvailable;
+
+                const response = await fetch(`/api/products/${productId}/availability`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(newAvailability)
+                });
+
+                if (response.ok) {
+                    showNotification(`Product ${newAvailability ? 'enabled' : 'disabled'} successfully`, 'success');
+                    loadProducts();
+                } else {
+                    showNotification('Error updating product availability', 'error');
+                }
+            } catch (error) {
+                showNotification('Error updating product availability', 'error');
+            }
+        }
+
+        function refreshProducts() {
+            loadProducts();
+        }
+
+        // Orders Management
+        async function loadOrders() {
+            try {
+                const response = await fetch('/api/orders');
+                const orders = await response.json();
+
+                const ordersHtml = orders.length === 0 ? `
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">
+                            <div class="mb-3">
+                                <i class="fas fa-receipt" style="font-size: 3rem; opacity: 0.5;"></i>
+                            </div>
+                            <p>No orders found</p>
+                        </td>
+                    </tr>
+                ` : orders.map(order => {
+                    const statusClass = order.status.toLowerCase();
+                    const statusText = order.status.charAt(0).toUpperCase() + order.status.slice(1);
+                    const itemsList = order.items.map(item =>
+                        `${item.quantity}x ${item.productName}`
+                    ).join(', ');
+
+                    return `
+                    <tr>
+                        <td>#${order.id}</td>
+                        <td>${order.customerName || 'Guest'}</td>
+                        <td>
+                            <div style="max-width: 300px;">
+                                <div class="text-muted" style="font-size: 0.875rem;">
+                                    ${itemsList.length > 100 ? itemsList.substring(0, 100) + '...' : itemsList}
+                                </div>
+                            </div>
+                        </td>
+                        <td><strong>${order.totalAmount.toFixed(2)} L.E</strong></td>
+                        <td>
+                            <span class="order-status ${statusClass}">${statusText}</span>
+                        </td>
+                        <td>${new Date(order.createdAt).toLocaleString()}</td>
+                        <td>
+                            <div class="btn-group">
+                                ${order.status === 'Pending' ? `
+                                    <button class="btn btn-sm btn-success" onclick="updateOrderStatus(${order.id}, 'Preparing')">
+                                        <i class="fas fa-check"></i>
+                                        Start
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="updateOrderStatus(${order.id}, 'Cancelled')">
+                                        <i class="fas fa-times"></i>
+                                        Cancel
+                                    </button>
+                                ` : ''}
+                                ${order.status === 'Preparing' ? `
+                                    <button class="btn btn-sm btn-success" onclick="updateOrderStatus(${order.id}, 'Ready')">
+                                        <i class="fas fa-check"></i>
+                                        Ready
+                                    </button>
+                                ` : ''}
+                                ${order.status === 'Ready' ? `
+                                    <button class="btn btn-sm btn-primary" onclick="updateOrderStatus(${order.id}, 'Completed')">
+                                        <i class="fas fa-check-circle"></i>
+                                        Complete
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                }).join('');
+
+                document.getElementById('ordersList').innerHTML = ordersHtml;
+
+                // Update order counts
+                const stats = {
+                    pending: orders.filter(o => o.status === 'Pending').length,
+                    preparing: orders.filter(o => o.status === 'Preparing').length,
+                    ready: orders.filter(o => o.status === 'Ready').length,
+                    completed: orders.filter(o => o.status === 'Completed').length
+                };
+
+                document.getElementById('pendingOrdersCount').textContent = stats.pending;
+                document.getElementById('preparingOrdersCount').textContent = stats.preparing;
+                document.getElementById('readyOrdersCount').textContent = stats.ready;
+                document.getElementById('completedOrdersCount').textContent = stats.completed;
+
+            } catch (error) {
+                console.error('Error loading orders:', error);
+                document.getElementById('ordersList').innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center text-danger">
+                            Error loading orders. Please try again.
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        function refreshOrders() {
+            loadOrders();
+        }
+
+        async function updateOrderStatus(orderId, newStatus) {
+            try {
+                const response = await fetch(`/api/orders/${orderId}/status`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: newStatus })
+                });
+
+                if (response.ok) {
+                    showNotification(`Order status updated to ${newStatus}`, 'success');
+                    loadOrders();
+                } else {
+                    showNotification('Error updating order status', 'error');
+                }
+            } catch (error) {
+                console.error('Error updating order status:', error);
+                showNotification('Error updating order status', 'error');
+            }
         }
 
         async function loadStats() {
@@ -1056,26 +2311,44 @@
 
         async function loadClients() {
             const clientsList = document.getElementById('clientsList');
+            const clientsListFull = document.getElementById('clientsListFull');
 
             try {
                 const response = await fetch('/api/admin/clients');
                 const clients = await response.json();
 
-                if (clients.length === 0) {
-                    clientsList.innerHTML = `
-                        <div class="text-center text-muted">
-                            <i class="fas fa-desktop" style="font-size: 2rem; margin-bottom: 1rem;"></i>
-                            <p>No clients connected</p>
-                        </div>
-                    `;
-                    return;
-                }
+                const clientsHtml = clients.length === 0 ? `
+                    <div class="text-center text-muted">
+                        <i class="fas fa-desktop" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                        <p>No clients connected</p>
+                    </div>
+                ` : clients.map(client => {
+                    // Determine status based on client.status value
+                    let statusClass, statusText;
+                    switch(client.status) {
+                        case 1: // Idle
+                            statusClass = 'idle';
+                            statusText = 'Idle';
+                            break;
+                        case 2: // Online
+                            statusClass = 'online';
+                            statusText = 'Online';
+                            break;
+                        case 3: // InSession
+                            statusClass = 'in-session';
+                            statusText = 'In Session';
+                            break;
+                        case 4: // Locked
+                            statusClass = 'locked';
+                            statusText = 'Locked';
+                            break;
+                        default: // Offline
+                            statusClass = 'offline';
+                            statusText = 'Offline';
+                    }
 
-                const statusClass = client.isOnline ? 'online' : 'offline';
-                const statusText = client.isOnline ? 'Online' : 'Offline';
-
-                clientsList.innerHTML = clients.map(client => `
-                    <div class="client-card fade-in">
+                    return `
+                    <div class="client-card fade-in" data-client-id="${client.id}">
                         <div class="client-header">
                             <div class="client-name">
                                 <i class="fas fa-desktop"></i>
@@ -1111,42 +2384,48 @@
                             </button>
                         </div>
                     </div>
-                `).join('');
+                `;
+                }).join('');
+
+                // Update both client lists
+                if (clientsList) clientsList.innerHTML = clientsHtml;
+                if (clientsListFull) clientsListFull.innerHTML = clientsHtml;
 
             } catch (error) {
-                clientsList.innerHTML = `
+                const errorHtml = `
                     <div class="text-center text-danger">
                         <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
                         <p>Error loading clients</p>
                     </div>
                 `;
+
+                if (clientsList) clientsList.innerHTML = errorHtml;
+                if (clientsListFull) clientsListFull.innerHTML = errorHtml;
             }
         }
 
         async function loadSessions() {
             const sessionsList = document.getElementById('sessionsList');
+            const sessionsListFull = document.getElementById('sessionsListFull');
 
             try {
                 const response = await fetch('/api/admin/sessions');
                 const sessions = await response.json();
 
-                if (sessions.length === 0) {
-                    sessionsList.innerHTML = `
-                        <tr>
-                            <td colspan="6" class="text-center text-muted">
-                                <i class="fas fa-clock" style="font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
-                                <p>No active sessions</p>
-                            </td>
-                        </tr>
-                    `;
-                    return;
-                }
-
-                sessionsList.innerHTML = sessions.map(session => `
+                const sessionsHtml = sessions.length === 0 ? `
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">
+                            <i class="fas fa-clock" style="font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
+                            <p>No active sessions</p>
+                        </td>
+                    </tr>
+                ` : sessions.map(session => `
                     <tr>
                         <td>${session.clientName || 'Unknown'}</td>
                         <td>${session.userName || 'Guest'}</td>
+                        <td>${session.startTime || 'N/A'}</td>
                         <td>${session.duration || '0:00:00'}</td>
+                        <td>${session.cost || '$0.00'}</td>
                         <td>
                             <span class="client-status ${session.status}">
                                 ${session.status}
@@ -1169,15 +2448,22 @@
                     </tr>
                 `).join('');
 
+                // Update both session lists
+                if (sessionsList) sessionsList.innerHTML = sessionsHtml;
+                if (sessionsListFull) sessionsListFull.innerHTML = sessionsHtml;
+
             } catch (error) {
-                sessionsList.innerHTML = `
+                const errorHtml = `
                     <tr>
-                        <td colspan="6" class="text-center text-danger">
+                        <td colspan="7" class="text-center text-danger">
                             <i class="fas fa-exclamation-triangle"></i>
                             <p>Error loading sessions</p>
                         </td>
                     </tr>
                 `;
+
+                if (sessionsList) sessionsList.innerHTML = errorHtml;
+                if (sessionsListFull) sessionsListFull.innerHTML = errorHtml;
             }
         }
 
@@ -1237,7 +2523,7 @@
 
         async function viewClient(clientId) {
             try {
-                window.open(`view-screen.html?client=${clientId}`, '_blank');
+                window.open(`view-screen.html?clientId=${clientId}`, '_blank');
             } catch (error) {
                 console.error('Error opening screen view:', error);
                 alert('Error opening screen view');
@@ -1282,7 +2568,7 @@
 
         async function remoteControl(clientId) {
             try {
-                window.open(`remote-control.html?client=${clientId}`, '_blank');
+                window.open(`remote-control.html?clientId=${clientId}`, '_blank');
             } catch (error) {
                 console.error('Error opening remote control:', error);
                 alert('Error opening remote control');
@@ -1331,12 +2617,122 @@
 
         // Notification System
         function showNotification(message, type = 'info') {
-            // Simple notification implementation
+            // Enhanced notification implementation with toast
             console.log(`[${type.toUpperCase()}] ${message}`);
 
-            // You could enhance this with a proper toast notification system
+            // Create toast notification element
+            const toast = document.createElement('div');
+            toast.className = `toast-notification toast-${type}`;
+            toast.innerHTML = `
+                <div class="toast-content">
+                    <i class="fas ${getToastIcon(type)}"></i>
+                    <span>${message}</span>
+                    <button class="toast-close" onclick="this.parentElement.parentElement.remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+
+            // Add to page
+            document.body.appendChild(toast);
+
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.remove();
+                }
+            }, 5000);
+
+            // For error type, also show alert for immediate attention
             if (type === 'error') {
-                alert(message);
+                // Don't double-alert for order notifications
+                if (!message.includes('Order #')) {
+                    console.error('Admin Error:', message);
+                }
+            }
+        }
+
+        function getToastIcon(type) {
+            const icons = {
+                'success': 'fa-check-circle',
+                'error': 'fa-exclamation-circle',
+                'warning': 'fa-exclamation-triangle',
+                'info': 'fa-info-circle',
+                'new': 'fa-shopping-cart',
+                'ready': 'fa-bell',
+                'cancelled': 'fa-times-circle'
+            };
+            return icons[type] || icons['info'];
+        }
+
+        function showOrderNotification(order, type) {
+            const messages = {
+                'new': `🛒 New Order #${order.id} - $${order.totalAmount.toFixed(2)} from Client ${order.clientId}`,
+                'status': `📋 Order #${order.id} status updated to ${order.status}`,
+                'ready': `🔔 Order #${order.id} is ready for pickup!`,
+                'cancelled': `❌ Order #${order.id} has been cancelled`
+            };
+
+            const message = messages[type] || `Order #${order.id} update`;
+
+            // Show special order notification with more details
+            const toast = document.createElement('div');
+            toast.className = `toast-notification toast-order toast-${type}`;
+            toast.innerHTML = `
+                <div class="toast-content">
+                    <div class="toast-header">
+                        <i class="fas ${getToastIcon(type)}"></i>
+                        <strong>${message}</strong>
+                        <button class="toast-close" onclick="this.parentElement.parentElement.parentElement.remove()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    ${order.orderItems ? `
+                        <div class="toast-body">
+                            <small>
+                                ${order.orderItems.length} items •
+                                Placed: ${new Date(order.createdAt).toLocaleTimeString()}
+                                ${order.customerNotes ? `• Notes: ${order.customerNotes}` : ''}
+                            </small>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+
+            // Add to page
+            document.body.appendChild(toast);
+
+            // Auto remove after 8 seconds for orders (longer to read details)
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.remove();
+                }
+            }, 8000);
+
+            // Log to console
+            console.log(`[ORDER NOTIFICATION] ${message}`, order);
+        }
+
+        function playNotificationSound() {
+            // Create a simple beep sound using Web Audio API
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.frequency.value = 800; // 800Hz tone
+                oscillator.type = 'sine';
+
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.3);
+            } catch (error) {
+                console.log('Could not play notification sound:', error);
             }
         }
 
@@ -1345,8 +2741,22 @@
             setInterval(() => {
                 if (currentSection === 'dashboard' ||
                     currentSection === 'clients' ||
-                    currentSection === 'sessions') {
-                    loadData();
+                    currentSection === 'sessions' ||
+                    currentSection === 'products' ||
+                    currentSection === 'orders') {
+                    if (currentSection === 'dashboard') {
+                        loadData();
+                    } else if (currentSection === 'clients') {
+                        loadClients();
+                        loadStats();
+                    } else if (currentSection === 'sessions') {
+                        loadSessions();
+                        loadStats();
+                    } else if (currentSection === 'products') {
+                        loadProducts();
+                    } else if (currentSection === 'orders') {
+                        loadOrders();
+                    }
                 }
             }, 5000); // Refresh every 5 seconds
         }

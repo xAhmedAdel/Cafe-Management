@@ -14,6 +14,9 @@ public static class ServiceCollectionExtensions
         services.AddSignalR();
         services.AddSingleton<INotificationService, NotificationService>();
 
+        // Register SignalR-enabled order notification service (overrides Infrastructure version)
+        services.AddScoped<IOrderNotificationService, SignalROrderNotificationService>();
+
         // Register authentication service
         services.AddScoped<IAuthService, AuthService>();
 

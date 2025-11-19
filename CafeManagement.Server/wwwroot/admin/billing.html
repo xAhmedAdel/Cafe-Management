@@ -1100,6 +1100,9 @@
             document.body.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
             updateThemeIcon(newTheme);
+
+            // Notify other tabs of theme change
+            window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme: newTheme } }));
         }
 
         function updateThemeIcon(theme) {
@@ -1130,9 +1133,33 @@
             }
         });
 
+        // Cross-tab theme synchronization
+        function setupCrossTabThemeSync() {
+            // Listen for storage changes from other tabs
+            window.addEventListener('storage', function(e) {
+                if (e.key === 'theme' && e.newValue !== null) {
+                    applyTheme(e.newValue);
+                }
+            });
+
+            // Use a custom event for same-tab communication
+            window.addEventListener('themeChanged', function(e) {
+                if (e.detail && e.detail.theme) {
+                    // Apply theme immediately for same-tab events
+                    applyTheme(e.detail.theme);
+                }
+            });
+        }
+
+        function applyTheme(theme) {
+            document.body.setAttribute('data-theme', theme);
+            updateThemeIcon(theme);
+        }
+
         // Initialize theme on load
         document.addEventListener('DOMContentLoaded', () => {
             initializeTheme();
+            setupCrossTabThemeSync();
         });
 
         // API base URL

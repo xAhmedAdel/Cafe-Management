@@ -1,4 +1,5 @@
 using CafeManagement.Core.Entities;
+using CafeManagement.Core.Enums;
 using CafeManagement.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,6 +19,12 @@ public class CafeManagementDbContext : DbContext, IApplicationDbContext
     public DbSet<BillingSettings> BillingSettings { get; set; }
     public DbSet<ClientDeployment> ClientDeployments { get; set; }
     public DbSet<DeploymentLog> DeploymentLogs { get; set; }
+
+    // Ordering System DbSets
+    public DbSet<Product> Products { get; set; }
+    public DbSet<Order> Orders { get; set; }
+    public DbSet<OrderItem> OrderItems { get; set; }
+    public DbSet<OrderNotification> OrderNotifications { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -132,6 +139,82 @@ public class CafeManagementDbContext : DbContext, IApplicationDbContext
                   .OnDelete(DeleteBehavior.Cascade);
         });
 
+        // Ordering System Configurations
+        modelBuilder.Entity<Product>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.Property(e => e.Price).HasDefaultValue(0.00m);
+            entity.Property(e => e.Category).HasDefaultValue(ProductCategory.Drinks);
+            entity.Property(e => e.ImageUrl).HasMaxLength(500);
+            entity.Property(e => e.IsAvailable).HasDefaultValue(true);
+            entity.Property(e => e.DisplayOrder).HasDefaultValue(0);
+            entity.Property(e => e.PreparationTimeMinutes).HasDefaultValue(5);
+            entity.HasIndex(e => e.Category);
+            entity.HasIndex(e => e.IsAvailable);
+            entity.HasIndex(e => e.DisplayOrder);
+        });
+
+        modelBuilder.Entity<Order>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.TotalAmount).HasDefaultValue(0.00m);
+            entity.Property(e => e.Status).HasDefaultValue(OrderStatus.Pending);
+            entity.Property(e => e.CustomerNotes).HasMaxLength(500);
+            entity.Property(e => e.CompletedAt).IsRequired(false);
+            entity.HasOne(e => e.User)
+                  .WithMany()
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.Client)
+                  .WithMany()
+                  .HasForeignKey(e => e.ClientId)
+                  .OnDelete(DeleteBehavior.Restrict);
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => e.ClientId);
+            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => e.CreatedAt);
+        });
+
+        modelBuilder.Entity<OrderItem>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Quantity).HasDefaultValue(1);
+            entity.Property(e => e.UnitPrice).HasDefaultValue(0.00m);
+            entity.HasOne(e => e.Order)
+                  .WithMany(o => o.OrderItems)
+                  .HasForeignKey(e => e.OrderId)
+                  .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Product)
+                  .WithMany(p => p.OrderItems)
+                  .HasForeignKey(e => e.ProductId)
+                  .OnDelete(DeleteBehavior.Restrict);
+            entity.HasIndex(e => e.OrderId);
+            entity.HasIndex(e => e.ProductId);
+        });
+
+        modelBuilder.Entity<OrderNotification>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Type).HasDefaultValue(NotificationType.NewOrder);
+            entity.Property(e => e.Message).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.IsRead).HasDefaultValue(false);
+            entity.Property(e => e.ReadAt).IsRequired(false);
+            entity.HasOne(e => e.Order)
+                  .WithMany(o => o.Notifications)
+                  .HasForeignKey(e => e.OrderId)
+                  .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Admin)
+                  .WithMany()
+                  .HasForeignKey(e => e.AdminId)
+                  .OnDelete(DeleteBehavior.SetNull);
+            entity.HasIndex(e => e.OrderId);
+            entity.HasIndex(e => e.AdminId);
+            entity.HasIndex(e => e.IsRead);
+            entity.HasIndex(e => e.Type);
+        });
+
         SeedData(modelBuilder);
     }
 
@@ -181,5 +264,30 @@ public class CafeManagementDbContext : DbContext, IApplicationDbContext
         };
 
         modelBuilder.Entity<BillingSettings>().HasData(defaultBillingSettings);
+
+        // Seed sample products for the ordering system
+        var products = new[]
+        {
+            // Drinks
+            new Product { Id = 1, Name = "Espresso", Description = "Strong black coffee", Price = 2.50m, Category = ProductCategory.Drinks, DisplayOrder = 1, PreparationTimeMinutes = 3, CreatedAt = fixedDateTime, UpdatedAt = fixedDateTime },
+            new Product { Id = 2, Name = "Cappuccino", Description = "Espresso with steamed milk foam", Price = 3.50m, Category = ProductCategory.Drinks, DisplayOrder = 2, PreparationTimeMinutes = 4, CreatedAt = fixedDateTime, UpdatedAt = fixedDateTime },
+            new Product { Id = 3, Name = "Latte", Description = "Espresso with steamed milk", Price = 4.00m, Category = ProductCategory.Drinks, DisplayOrder = 3, PreparationTimeMinutes = 4, CreatedAt = fixedDateTime, UpdatedAt = fixedDateTime },
+            new Product { Id = 4, Name = "Tea", Description = "Hot tea selection", Price = 2.00m, Category = ProductCategory.Drinks, DisplayOrder = 4, PreparationTimeMinutes = 3, CreatedAt = fixedDateTime, UpdatedAt = fixedDateTime },
+            new Product { Id = 5, Name = "Fresh Juice", Description = "Orange or apple juice", Price = 3.00m, Category = ProductCategory.Drinks, DisplayOrder = 5, PreparationTimeMinutes = 2, CreatedAt = fixedDateTime, UpdatedAt = fixedDateTime },
+
+            // Food
+            new Product { Id = 6, Name = "Sandwich", Description = "Fresh deli sandwich", Price = 6.00m, Category = ProductCategory.Food, DisplayOrder = 1, PreparationTimeMinutes = 8, CreatedAt = fixedDateTime, UpdatedAt = fixedDateTime },
+            new Product { Id = 7, Name = "Pizza Slice", Description = "Fresh pizza slice", Price = 4.50m, Category = ProductCategory.Food, DisplayOrder = 2, PreparationTimeMinutes = 10, CreatedAt = fixedDateTime, UpdatedAt = fixedDateTime },
+            new Product { Id = 8, Name = "Burger", Description = "Classic beef burger", Price = 8.00m, Category = ProductCategory.Food, DisplayOrder = 3, PreparationTimeMinutes = 12, CreatedAt = fixedDateTime, UpdatedAt = fixedDateTime },
+            new Product { Id = 9, Name = "Salad", Description = "Fresh garden salad", Price = 5.50m, Category = ProductCategory.Food, DisplayOrder = 4, PreparationTimeMinutes = 5, CreatedAt = fixedDateTime, UpdatedAt = fixedDateTime },
+
+            // Snacks
+            new Product { Id = 10, Name = "Chips", Description = "Potato chips", Price = 1.50m, Category = ProductCategory.Snacks, DisplayOrder = 1, PreparationTimeMinutes = 1, CreatedAt = fixedDateTime, UpdatedAt = fixedDateTime },
+            new Product { Id = 11, Name = "Chocolate Bar", Description = "Various chocolate options", Price = 2.00m, Category = ProductCategory.Snacks, DisplayOrder = 2, PreparationTimeMinutes = 1, CreatedAt = fixedDateTime, UpdatedAt = fixedDateTime },
+            new Product { Id = 12, Name = "Cookies", Description = "Fresh baked cookies", Price = 2.50m, Category = ProductCategory.Snacks, DisplayOrder = 3, PreparationTimeMinutes = 2, CreatedAt = fixedDateTime, UpdatedAt = fixedDateTime },
+            new Product { Id = 13, Name = "Cake Slice", Description = "Daily cake selection", Price = 3.50m, Category = ProductCategory.Snacks, DisplayOrder = 4, PreparationTimeMinutes = 2, CreatedAt = fixedDateTime, UpdatedAt = fixedDateTime }
+        };
+
+        modelBuilder.Entity<Product>().HasData(products);
     }
 }
